@@ -411,7 +411,7 @@ export default function SingleQuery() {
           {/* Warnings / Errors */}
           {!hasKey && (
             <Alert>
-              <AlertDescription>请先在右上角设置 API Key 后再查询</AlertDescription>
+              <AlertDescription>请先在右上角「API 设置」配置 Ahrefs API Key 后再查询</AlertDescription>
             </Alert>
           )}
           {tab === "multi-country" && selectedCountries.length === 0 && (

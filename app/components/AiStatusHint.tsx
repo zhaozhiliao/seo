@@ -12,7 +12,7 @@ export default function AiStatusHint() {
   return (
     <Alert>
       <AlertDescription>
-        请先点击右上角「AI 设置」配置 {provider?.name ?? "AI"} API Key 后再使用。
+        请先点击右上角「API 设置」配置 {provider?.name ?? "AI"} API Key 后再使用。
       </AlertDescription>
     </Alert>
   );

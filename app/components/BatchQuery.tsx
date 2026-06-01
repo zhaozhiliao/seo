@@ -340,7 +340,7 @@ export default function BatchQuery() {
         {/* Notices */}
         {!hasKey && (
           <Alert>
-            <AlertDescription>请先在右上角设置 API Key 后再使用批量查询</AlertDescription>
+            <AlertDescription>请先在右上角「API 设置」配置 Ahrefs API Key 后再使用批量查询</AlertDescription>
           </Alert>
         )}
         {detectedNote && !running && (

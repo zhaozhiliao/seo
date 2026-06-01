@@ -13,7 +13,7 @@ const HIGHLIGHTS = [
 export default function KeywordsPage() {
   return (
     <div className="flex min-h-screen flex-col bg-muted/40">
-      <Header showAhrefsKey />
+      <Header />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8 sm:py-10">
         {/* ── Breadcrumb ── */}
