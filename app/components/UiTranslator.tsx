@@ -20,6 +20,9 @@ const TARGET_LANGS = [
   { code: "fr", label: "Français" },
   { code: "de", label: "Deutsch" },
   { code: "pt", label: "Português" },
+  { code: "pl", label: "Polski" },
+  { code: "cs", label: "Čeština" },
+  { code: "it", label: "Italiano" },
   { code: "ru", label: "Русский" },
   { code: "ar", label: "العربية" },
   { code: "id", label: "Bahasa" },
@@ -36,7 +39,7 @@ const LS_PROMPT = "ui_translate_prompt";
 export default function UiTranslator() {
   const { selectedProvider, activeKey, hasActiveKey } = useAiKeys();
   const [text, setText] = useState("");
-  const [targets, setTargets] = useState<string[]>(["en", "fr", "es", "ru", "ar"]);
+  const [targets, setTargets] = useState<string[]>(["en", "fr", "es", "ru", "ar", "de", "pt", "pl", "cs", "it"]);
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [promptOpen, setPromptOpen] = useState(false);
   const [loading, setLoading] = useState(false);
