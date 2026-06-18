@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ahrefsRequest } from "@/app/lib/ahrefs";
+import { ahrefsRequest } from "@/lib/ahrefs";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();

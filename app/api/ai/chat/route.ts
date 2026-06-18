@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getProvider, type AiProvider } from "@/app/lib/ai/providers";
+import { getProvider, type AiProvider } from "@/lib/ai/providers";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;

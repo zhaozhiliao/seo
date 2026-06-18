@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ahrefsRequest } from "@/app/lib/ahrefs";
+import { ahrefsRequest } from "@/lib/ahrefs";
 
 export async function GET(req: NextRequest) {
   const keyword = req.nextUrl.searchParams.get("keyword");

@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { processKeywordRow } from "@/app/lib/ahrefs";
+import { processKeywordRow } from "@/lib/ahrefs";
 
 export const runtime = "nodejs";
 
