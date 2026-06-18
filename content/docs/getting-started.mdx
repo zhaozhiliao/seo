@@ -1,0 +1,26 @@
+---
+title: 快速开始
+description: 本站的内容结构与导航方式。
+order: 2
+---
+
+本站用单个 Next.js 项目承载个人站、工具集与多个 App 的文档/博客/更新日志。
+
+## 内容结构
+
+```text
+content/
+├── blog/            个人博客
+├── docs/            通用文档（你正在看的）
+└── apps/<slug>/     每个 App 的 docs / blog / changelog
+```
+
+## 代码高亮示例
+
+```ts
+export function greet(name: string) {
+  return `Hello, ${name}`;
+}
+```
+
+所有正文都是 MDX，与组件代码分离。

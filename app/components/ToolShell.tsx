@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import Header from "@/app/components/Header";
+import { Container } from "@/components/ui/container";
 
 interface ToolShellProps {
   title: string;
@@ -11,45 +11,33 @@ interface ToolShellProps {
   children: React.ReactNode;
 }
 
+/** Breadcrumb + title block for a single tool. Global nav/footer come from
+    the root layout — this only renders the in-page chrome. */
 export default function ToolShell({ title, nameEn, description, icon: Icon, children }: ToolShellProps) {
   return (
-    <div className="flex min-h-screen flex-col bg-muted/40">
-      <Header />
+    <Container className="py-10">
+      <nav className="mb-5 flex items-center gap-1.5 text-xs">
+        <Link href="/tools" className="text-fg-muted transition-colors hover:text-brand">
+          工具
+        </Link>
+        <ChevronRight size={13} className="text-fg-subtle" aria-hidden="true" />
+        <span className="font-medium text-fg">{title}</span>
+      </nav>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8 sm:py-10">
-        {/* Breadcrumb */}
-        <nav className="mb-5 flex items-center gap-1.5 text-xs">
-          <Link href="/tools" className="text-muted-foreground transition-colors hover:text-foreground">
-            SEO Toolkit
-          </Link>
-          <ChevronRight size={13} className="text-muted-foreground/50" />
-          <Link href="/tools" className="text-muted-foreground transition-colors hover:text-foreground">
-            工具
-          </Link>
-          <ChevronRight size={13} className="text-muted-foreground/50" />
-          <span className="font-medium text-foreground">{title}</span>
-        </nav>
-
-        {/* Intro */}
-        <div className="mb-8">
-          <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background ring-1 ring-black/[0.06]">
-              <Icon size={18} className="text-foreground/80" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-              <p className="font-mono text-xs text-muted-foreground">{nameEn}</p>
-            </div>
+      <div className="mb-8">
+        <div className="mb-3 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-bg-card">
+            <Icon size={18} className="text-fg-muted" aria-hidden="true" />
           </div>
-          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+            <p className="font-mono text-xs text-fg-muted">{nameEn}</p>
+          </div>
         </div>
+        <p className="max-w-2xl text-sm leading-relaxed text-fg-muted">{description}</p>
+      </div>
 
-        {children}
-      </main>
-
-      <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-        仅供个人使用 · Powered by AI
-      </footer>
-    </div>
+      {children}
+    </Container>
   );
 }

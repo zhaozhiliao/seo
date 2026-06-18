@@ -6,10 +6,11 @@ import CountrySelector from "./CountrySelector";
 import LanguageSelector from "./LanguageSelector";
 import LangMappingPanel from "./LangMappingPanel";
 import PivotTable, { type BatchRow } from "./PivotTable";
-import { DEFAULT_COUNTRIES, COUNTRY_MAP } from "@/app/lib/countries";
+import { DEFAULT_COUNTRIES, COUNTRY_MAP, ALL_COUNTRY_CODES } from "@/app/lib/countries";
 import { DEFAULT_LANGS, LANG_MAP, ALL_LANGS } from "@/app/lib/languages";
 import type { LangVolumes } from "@/app/lib/ahrefs";
 import { useApiKey } from "@/app/context/ApiKeyContext";
+import { parseCsvCodes, useUrlParams } from "@/app/lib/url-state";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -20,6 +21,27 @@ type MatchMode = "smart" | "full";
 type PanelType = "lang" | "country" | "mapping" | null;
 
 const LS_OVERRIDES_KEY = "ahrefs_lang_overrides";
+const COUNTRY_SET = new Set(ALL_COUNTRY_CODES);
+const PANEL_VALUES = ["lang", "country", "mapping"] as const;
+
+function parseLangs(raw: string | null, fallback: string[]): string[] {
+  if (!raw) return fallback;
+  const langs = raw
+    .split(",")
+    .map((l) => l.trim().toLowerCase())
+    .filter((l) => ALL_LANGS.includes(l));
+  return langs.length ? langs : fallback;
+}
+
+function parsePanel(raw: string | null): PanelType {
+  return PANEL_VALUES.includes(raw as (typeof PANEL_VALUES)[number])
+    ? (raw as PanelType)
+    : null;
+}
+
+function arraysEqual(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((v, i) => v === b[i]);
+}
 
 function detectLangsFromRow(row: Record<string, string>): string[] {
   return Object.keys(row)
@@ -107,9 +129,13 @@ async function exportToExcel(
 
 export default function BatchQuery() {
   const { apiKey, hasKey } = useApiKey();
-  const [selectedCountries, setSelectedCountries] = useState<string[]>(DEFAULT_COUNTRIES);
-  const [selectedLangs, setSelectedLangs] = useState<string[]>(DEFAULT_LANGS);
-  const [openPanel, setOpenPanel] = useState<PanelType>(null);
+  const { get, set } = useUrlParams();
+
+  const matchMode: MatchMode = get("b-mode") === "full" ? "full" : "smart";
+  const openPanel = parsePanel(get("b-panel"));
+  const selectedCountries = parseCsvCodes(get("b-countries"), DEFAULT_COUNTRIES, COUNTRY_SET);
+  const selectedLangs = parseLangs(get("b-langs"), DEFAULT_LANGS);
+
   const [focusCountry, setFocusCountry] = useState<string | undefined>(undefined);
   const [rows, setRows] = useState<BatchRow[]>([]);
   const [queryLangs, setQueryLangs] = useState<string[]>(DEFAULT_LANGS);
@@ -117,10 +143,22 @@ export default function BatchQuery() {
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [matchMode, setMatchMode] = useState<MatchMode>("smart");
   const [detectedNote, setDetectedNote] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  function setMatchMode(mode: MatchMode) {
+    set({ "b-mode": mode === "smart" ? null : mode });
+  }
+  function setOpenPanel(panel: PanelType) {
+    set({ "b-panel": panel });
+  }
+  function setSelectedCountries(next: string[]) {
+    set({ "b-countries": arraysEqual(next, DEFAULT_COUNTRIES) ? null : next.join(",") });
+  }
+  function setSelectedLangs(next: string[]) {
+    set({ "b-langs": arraysEqual(next, DEFAULT_LANGS) ? null : next.join(",") });
+  }
 
   useEffect(() => {
     try {
@@ -147,7 +185,9 @@ export default function BatchQuery() {
   }
 
   function togglePanel(panel: PanelType) {
-    setOpenPanel((prev) => { if (prev === panel) return null; setFocusCountry(undefined); return panel; });
+    const next = openPanel === panel ? null : panel;
+    setFocusCountry(undefined);
+    setOpenPanel(next);
   }
 
   async function handleFileAndRun(e: React.ChangeEvent<HTMLInputElement>) {
@@ -217,7 +257,7 @@ export default function BatchQuery() {
       <div className="px-6 py-4 flex items-center justify-between gap-3 border-b border-border/60">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted">
-            <LayoutGrid size={16} className="text-foreground/70" />
+            <LayoutGrid size={16} className="text-foreground/70" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-sm font-semibold leading-tight">批量关键词查询</h2>
@@ -247,19 +287,35 @@ export default function BatchQuery() {
           <Button
             size="sm"
             disabled={running || !hasKey}
-            render={<label />}
+            render={<label htmlFor="batch-file-input" />}
             className="gap-1.5 cursor-pointer"
           >
-            <Upload size={13} />
+            <Upload size={13} aria-hidden="true" />
             上传文件并开始
-            <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" className="hidden"
-              onChange={handleFileAndRun} disabled={running || !hasKey} />
+            <input
+              id="batch-file-input"
+              ref={fileRef}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              className="hidden"
+              aria-label="上传 Excel 或 CSV 文件"
+              onChange={handleFileAndRun}
+              disabled={running || !hasKey}
+            />
           </Button>
 
           {running && (
-            <Button type="button" variant="destructive" size="sm" onClick={() => abortRef.current?.abort()}
-              className="gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                if (!window.confirm("确定停止当前批量查询？")) return;
+                abortRef.current?.abort();
+              }}
+              className="gap-1.5"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" aria-hidden="true" />
               停止
             </Button>
           )}
@@ -268,7 +324,7 @@ export default function BatchQuery() {
             <Button type="button" variant="outline" size="sm"
               onClick={() => exportToExcel(rows, selectedCountries, queryLangs, matchMode, langOverrides)}
               className="gap-1.5 ml-auto">
-              <Download size={13} />
+              <Download size={13} aria-hidden="true" />
               导出 Excel
             </Button>
           )}
@@ -278,20 +334,20 @@ export default function BatchQuery() {
         <div className="flex flex-wrap items-center gap-2 pt-3">
           {/* Match mode */}
           <div className="flex rounded-lg bg-muted p-0.5 text-xs font-medium">
-            <button type="button" onClick={() => setMatchMode("smart")}
-              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all ${matchMode === "smart" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-              <Zap size={11} />智能匹配
+            <button type="button" onClick={() => setMatchMode("smart")} aria-pressed={matchMode === "smart"}
+              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-[color,background-color,box-shadow] ${matchMode === "smart" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              <Zap size={11} aria-hidden="true" />智能匹配
             </button>
-            <button type="button" onClick={() => setMatchMode("full")}
-              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all ${matchMode === "full" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-              <LayoutGrid size={11} />全量结果
+            <button type="button" onClick={() => setMatchMode("full")} aria-pressed={matchMode === "full"}
+              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-[color,background-color,box-shadow] ${matchMode === "full" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              <LayoutGrid size={11} aria-hidden="true" />全量结果
             </button>
           </div>
 
           {matchMode === "smart" && (
             <Button type="button" variant={openPanel === "mapping" ? "secondary" : "outline"} size="sm"
               onClick={() => togglePanel("mapping")} className="gap-1.5">
-              <Settings2 size={12} />语言映射
+              <Settings2 size={12} aria-hidden="true" />语言映射
               {overrideCount > 0 && (
                 <Badge className="h-4 px-1.5 text-[9px]">{overrideCount}</Badge>
               )}
@@ -302,13 +358,13 @@ export default function BatchQuery() {
 
           <Button type="button" variant={openPanel === "lang" ? "secondary" : "outline"} size="sm"
             onClick={() => togglePanel("lang")} className="gap-1.5">
-            <Languages size={12} />模板语言
+            <Languages size={12} aria-hidden="true" />模板语言
             <Badge variant="secondary" className="h-4 px-1.5 text-[9px]">{selectedLangs.length}</Badge>
           </Button>
 
           <Button type="button" variant={openPanel === "country" ? "secondary" : "outline"} size="sm"
             onClick={() => togglePanel("country")} className="gap-1.5">
-            <Globe size={12} />查询国家
+            <Globe size={12} aria-hidden="true" />查询国家
             <Badge variant="secondary" className="h-4 px-1.5 text-[9px]">{selectedCountries.length}</Badge>
           </Button>
         </div>
@@ -345,7 +401,7 @@ export default function BatchQuery() {
         )}
         {detectedNote && !running && (
           <Alert>
-            <Info size={14} />
+            <Info size={14} aria-hidden="true" />
             <AlertDescription>{detectedNote}</AlertDescription>
           </Alert>
         )}
@@ -357,13 +413,13 @@ export default function BatchQuery() {
 
         {/* Progress */}
         {progress && (
-          <div className="space-y-2">
+          <div className="space-y-2" aria-live="polite" aria-atomic="true">
             <div className="flex justify-between text-xs text-muted-foreground">
               <span className="flex items-center gap-2">
-                {running && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
+                {running && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />}
                 {running ? "处理中…" : "已完成"} {progress.done} / {progress.total}
               </span>
-              <span className="font-mono font-semibold">{pct}%</span>
+              <span className="font-mono font-semibold tabular-nums">{pct}%</span>
             </div>
             <Progress value={pct} className="h-1.5" />
           </div>
@@ -385,7 +441,7 @@ export default function BatchQuery() {
         {!running && rows.length === 0 && !error && (
           <div className="flex flex-col items-center justify-center py-14 text-center">
             <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mb-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-              <Upload size={18} className="text-muted-foreground" />
+              <Upload size={18} className="text-muted-foreground" aria-hidden="true" />
             </div>
             <p className="text-sm font-medium mb-1">上传 Excel 或 CSV 文件开始批量查询</p>
             <p className="text-xs text-muted-foreground">先选择语言并下载模板，填写关键词后上传</p>
