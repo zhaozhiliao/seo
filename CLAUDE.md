@@ -16,8 +16,8 @@ auth, no backend DB — tool credentials live in the browser.
   and blog content (personal + per-app). We use the content pipeline + Shiki + TOC, and render
   with our **own** design-system components — `fumadocs-ui` is **not** installed.
 - **shadcn/ui** primitives on **`@base-ui/react`** (not Radix). Icons: **`lucide-react`**.
-- **`next-themes`** for light/dark. Fonts: **Inter** (sans) + **JetBrains Mono** (mono) via
-  `next/font/google`.
+- **`next-themes`** for light/dark. Fonts: **Geist Sans** + **Geist Mono** via the `geist`
+  package (`geist/font/sans` + `geist/font/mono`).
 - `xlsx` for spreadsheet import/export in the keyword tool.
 - Dev server: **port 3001** (`npm run dev`). Build: `npm run build`. Lint: `npm run lint`.
 
@@ -83,11 +83,15 @@ from content.)
 - `.source` is regenerated automatically by the Next plugin (`createMDX` in `next.config.mjs`);
   run `npx fumadocs-mdx` to regenerate manually.
 
-## Design system (Wikipie — restrained modernism, à la Vercel/Linear)
+## Design system (Vercel **Geist** — https://vercel.com/design)
 
+- The design system **is Geist**. Semantic tokens map onto Geist's grayscale + blue accent; pull
+  the spec from `https://vercel.com/design.md` (light) and `/design.dark.md` (dark) if extending.
 - **All tokens live in `app/globals.css`**: raw CSS vars in `:root` / `:root.dark` (light+dark),
-  bridged into Tailwind utilities under `@theme inline`. Brand accent is **Indigo `#4F46E5`**
-  (`#6366F1` in dark).
+  bridged into Tailwind utilities under `@theme inline`. Brand accent is **Geist blue `#006bff`**
+  (`#006efe` in dark). Dark surfaces are true black (`#000`). Geist color-step intent: 100 bg ·
+  400 border · 700 solid fill · 900 secondary text · 1000 primary text. Shadows stay subtle
+  (borders carry hierarchy, especially in dark); radii are tight (6 / 12 / 16).
 - Use semantic utilities: `bg-bg`, `bg-bg-subtle`, `bg-bg-card`, `text-fg`, `text-fg-muted`,
   `text-fg-subtle`, `border-border`, `bg-brand`, `text-brand`, `bg-brand-soft`. Legacy shadcn
   names (`bg-background`, `bg-primary`, …) are aliased to the same tokens so `ui/*` keeps working.
