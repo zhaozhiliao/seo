@@ -2,7 +2,8 @@ import type { MetadataRoute } from "next";
 import { docsSource } from "@/lib/source";
 import { TOOLS } from "@/app/(site)/tools/registry";
 import { getAllApps } from "@/lib/apps";
-import { getBlogPosts, getAppDocsNav, appHasChangelog } from "@/lib/content";
+import { getBlogPosts, appHasChangelog } from "@/lib/content";
+import { getAppDocsSource } from "@/lib/app-docs-source";
 import { appBaseUrl } from "@/lib/app-url";
 
 const BASE = "https://wikipie.com";
@@ -23,10 +24,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const app of getAllApps()) {
     const base = appBaseUrl(app.slug);
     add(base);
-    const docs = getAppDocsNav(app.slug);
-    if (docs.length) {
+    const source = getAppDocsSource(app.slug);
+    if (source) {
       add(`${base}/docs`);
-      docs.forEach((n) => add(`${base}/docs${n.slugs.length ? "/" + n.slugs.join("/") : ""}`));
+      source.getPages().forEach((pg) => add(`${base}${pg.url}`));
     }
     if (appHasChangelog(app.slug)) add(`${base}/changelog`);
   }

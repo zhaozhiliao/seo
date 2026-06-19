@@ -1,8 +1,8 @@
 /**
  * App registry — the single source of truth (ARCHITECTURE.md §3).
  * Add an App = append one entry here + create content/apps/<slug>/docs/*.mdx
- * (and optionally changelog/*.mdx). No route code changes required. The App is
- * served at its own subdomain (<slug>.<root>).
+ * (and optionally changelog/*.mdx). Docs sidebar groups use Fumadocs meta.json
+ * — also add `defineDocs` + loader entry in source.config.ts / lib/app-docs-source.ts.
  */
 
 /** Optional marketing landing for an App's home (else a simple hero is shown).

@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { MDXContent } from "@/components/mdx/mdx-content";
 import { Toc } from "@/components/docs/toc";
+import { DocsPageActions } from "@/components/docs/docs-page-actions";
 import { docsSource } from "@/lib/source";
+import { docGithubUrl, docMarkdownUrl } from "@/lib/doc-markdown";
 import { buildMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
@@ -30,6 +32,10 @@ export default async function DocsPage({ params }: { params: Promise<{ slug?: st
       <article className="min-w-0">
         <h1 className="mb-2 text-3xl font-bold tracking-tight">{page.data.title}</h1>
         {page.data.description && <p className="mb-6 text-lg text-fg-muted">{page.data.description}</p>}
+        <DocsPageActions
+          markdownUrl={docMarkdownUrl(page.url)}
+          githubUrl={docGithubUrl(page.absolutePath)}
+        />
         <MDXContent body={page.data.body} />
       </article>
       <Toc items={page.data.toc} />

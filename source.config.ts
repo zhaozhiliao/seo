@@ -1,4 +1,4 @@
-import { defineDocs, defineCollections, defineConfig, frontmatterSchema } from "fumadocs-mdx/config";
+import { defineDocs, defineCollections, defineConfig } from "fumadocs-mdx/config";
 import { z } from "zod";
 
 /* Shared frontmatter for blog-style entries (personal + app). */
@@ -7,11 +7,6 @@ const blogSchema = z.object({
   description: z.string().optional(),
   date: z.string().or(z.date()).optional(),
   tags: z.array(z.string()).optional(),
-});
-
-/* App docs frontmatter — keep `order` for sidebar sorting. */
-const appDocSchema = frontmatterSchema.extend({
-  order: z.number().optional(),
 });
 
 /* App changelog entry — one MDX file per version. */
@@ -25,6 +20,9 @@ const changelogSchema = z.object({
 /* ── Personal docs (with page tree via meta.json) ── */
 export const docs = defineDocs({
   dir: "content/docs",
+  docs: {
+    postprocess: { includeProcessedMarkdown: true },
+  },
 });
 
 /* ── Personal blog ── */
@@ -37,11 +35,13 @@ export const blog = defineCollections({
 /* ── App content — docs + changelog are parallel sections per App, filtered by
    app slug in lib/content.ts. Relative paths look like
    `app1/docs/getting-started.mdx` and `app1/changelog/v1.8.0.mdx`. ── */
-export const appDocs = defineCollections({
-  type: "doc",
-  dir: "content/apps",
-  files: ["*/docs/**/*.mdx"],
-  schema: appDocSchema,
+/* App docs — one defineDocs per App (Fumadocs page tree + meta.json grouping).
+   Add a matching export when registering a new App with docs. */
+export const whatermindDocs = defineDocs({
+  dir: "content/apps/whatermind/docs",
+  docs: {
+    postprocess: { includeProcessedMarkdown: true },
+  },
 });
 
 export const appChangelog = defineCollections({
