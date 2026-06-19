@@ -1,11 +1,12 @@
 # CLAUDE.md
 
 **Wikipie** (`ahrefs-next`) — a personal, Chinese-language website that bundles, in **one
-Next.js App Router project**: a personal site (home + blog + docs), an SEO **tools** suite, and
-an **intro + docs space for multiple Apps** (the changelog is folded into each App's docs tree;
-there is no per-App blog — App announcements go to the personal blog). Core principle: **adding an
-App = one config entry + a content directory, with zero route-code changes.** Single-user, no
-auth, no backend DB — tool credentials live in the browser.
+Next.js App Router project**: a personal site (home + blog + docs) on the root domain, an SEO
+**tools** suite, and a **standalone site per App** on its own subdomain (intro + docs +
+changelog, where 文档 and 更新日志 are parallel tabs; there is no per-App blog — App announcements
+go to the personal blog). Core principle: **adding an App = one config entry + a content
+directory, with zero route-code changes.** Single-user, no auth, no backend DB — tool credentials
+live in the browser. **Deployment / subdomain / DNS setup lives in [DEPLOY.md](./DEPLOY.md).**
 
 ## Stack
 
