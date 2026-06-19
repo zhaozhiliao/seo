@@ -48,6 +48,19 @@
   /* Layout widths */
   --content-max: 800px;
   --page-max: 1440px;
+
+  /* Modular grid (see .cursor/skills/modular-grid/) */
+  --grid-cols: 12;
+  --grid-bl: var(--space-2);
+  --grid-lh: var(--space-6);
+  --grid-gutter: var(--space-6);
+  --grid-margin: var(--space-6);
+
+  /* Dev grid overlay tints (Geist brand, not Swiss red) */
+  --grid-col-fill: color-mix(in srgb, var(--brand) 8%, transparent);
+  --grid-col-edge: color-mix(in srgb, var(--brand) 35%, transparent);
+  --grid-base-major: color-mix(in srgb, var(--info) 30%, transparent);
+  --grid-base-minor: color-mix(in srgb, var(--info) 10%, transparent);
 }
 
 :root.dark,
@@ -202,4 +215,130 @@ pre code { display: grid; background: transparent; }
   html { scroll-behavior: auto; }
   .animate-spin,
   .animate-pulse { animation: none !important; }
+}
+
+/* ─── Modular grid (App landing + editorial spreads) ─────────────── */
+.grid-page {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  column-gap: var(--grid-gutter);
+  row-gap: var(--grid-lh);
+}
+
+.grid-band {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  column-gap: var(--grid-gutter);
+  row-gap: var(--grid-lh);
+  align-items: start;
+}
+
+@supports not (grid-template-columns: subgrid) {
+  .grid-band { grid-template-columns: repeat(var(--grid-cols), 1fr); }
+}
+
+.landing-col-full { grid-column: 1 / -1; }
+.landing-col-hero { grid-column: 1 / -1; }
+.landing-col-media { grid-column: 1 / -1; }
+
+@media (min-width: 1024px) {
+  .landing-col-hero { grid-column: 1 / 6; }
+  .landing-col-media { grid-column: 7 / 13; align-self: center; }
+}
+
+/* Grid page shell — overlay lives in the SAME box as .grid-page (§2.2) */
+.grid-page-shell {
+  position: relative;
+}
+
+.guides {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0;
+  transition: opacity 0.26s ease;
+}
+
+body.grid-on .guides {
+  opacity: 1;
+}
+
+.guides .cols {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  column-gap: var(--grid-gutter);
+}
+
+.guides .col {
+  position: relative;
+  background: var(--grid-col-fill);
+  box-shadow: inset 1px 0 0 var(--grid-col-edge), inset -1px 0 0 var(--grid-col-edge);
+}
+
+.guides .col span {
+  position: absolute;
+  top: calc(var(--grid-bl) * 4);
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1;
+  color: var(--brand);
+}
+
+.guides .rows {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(to bottom, var(--grid-base-major) 0 1px, transparent 1px var(--grid-lh)),
+    repeating-linear-gradient(to bottom, var(--grid-base-minor) 0 1px, transparent 1px var(--grid-bl));
+}
+
+.grid-toggle {
+  position: fixed;
+  top: calc(var(--space-6) + 56px);
+  right: var(--space-6);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: none;
+  cursor: pointer;
+  background: var(--fg);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+}
+
+.grid-toggle-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--fg-subtle);
+}
+
+body.grid-on .grid-toggle {
+  background: var(--brand);
+}
+
+body.grid-on .grid-toggle-dot {
+  background: #fff;
+}
+
+.grid-toggle-kbd {
+  margin-left: var(--space-1);
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, #fff 15%, transparent);
+  font-size: 10px;
 }

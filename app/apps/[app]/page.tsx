@@ -12,7 +12,14 @@ export async function generateMetadata({ params }: { params: Promise<{ app: stri
   const { app: appSlug } = await params;
   const app = getApp(appSlug);
   if (!app) return {};
-  return { ...buildMetadata({ title: app.name, description: app.tagline, path: appBaseUrl(app.slug) }), title: { absolute: app.name } };
+  return {
+    ...buildMetadata({
+      title: app.name,
+      description: app.landing?.subhead ?? app.tagline,
+      path: appBaseUrl(app.slug),
+    }),
+    title: { absolute: app.landing?.headline?.split(" - ")[0] ?? app.name },
+  };
 }
 
 export default async function AppHomePage({ params }: { params: Promise<{ app: string }> }) {

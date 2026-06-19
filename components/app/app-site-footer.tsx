@@ -1,24 +1,36 @@
 import Link from "next/link";
 import { CANONICAL_ROOT } from "@/lib/app-url";
+import { resolveAppLinks } from "@/lib/app-config-links";
 import { AppLogo } from "@/components/app/app-logo";
+import { FooterLinkColumn, FooterShell } from "@/components/footer/footer-columns";
 import type { AppConfig } from "@/lib/apps";
 
-/** Footer for an App's own site. Links back to the personal site root. */
+/** Footer for an App's own site — layout shared; link columns from `app.footer` in apps.config. */
 export function AppSiteFooter({ app }: { app: AppConfig }) {
+  const year = new Date().getFullYear();
   const homeUrl = `${CANONICAL_ROOT.includes("localhost") ? "http" : "https"}://${CANONICAL_ROOT}`;
+  const copyrightName = app.footer.copyrightName ?? app.name;
+
   return (
-    <footer className="mt-24 border-t border-border bg-bg-subtle">
-      <div className="mx-auto flex flex-col gap-2 px-6 py-10 text-sm sm:flex-row sm:items-center sm:justify-between" style={{ maxWidth: "var(--page-max)" }}>
-        <div className="flex items-center gap-2">
+    <FooterShell
+      brand={
+        <Link href="/" className="inline-flex items-center gap-2 transition-opacity hover:opacity-80">
           <AppLogo app={app} size="sm" />
-          <span className="font-medium">{app.name}</span>
-          <span className="text-fg-subtle">· {app.tagline}</span>
-        </div>
-        <div className="flex items-center gap-4 text-fg-muted">
-          <Link href="/" className="transition-colors hover:text-brand">介绍</Link>
-          <a href={homeUrl} className="transition-colors hover:text-brand">wikipie ↗</a>
-        </div>
-      </div>
-    </footer>
+          <span className="text-sm font-semibold tracking-tight">{app.name}</span>
+        </Link>
+      }
+      copyright={`© ${year} ${copyrightName}`}
+      columns={
+        <>
+          {app.footer.columns.map((col) => (
+            <FooterLinkColumn
+              key={col.title}
+              title={col.title}
+              links={resolveAppLinks(col.links, homeUrl)}
+            />
+          ))}
+        </>
+      }
+    />
   );
 }

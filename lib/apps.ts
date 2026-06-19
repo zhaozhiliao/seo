@@ -1,4 +1,5 @@
-import { apps, type AppConfig } from "@/content/apps/apps.config";
+import { apps } from "@/content/apps/apps.config";
+import type { AppConfig } from "@/content/apps/app-types";
 
 export type { AppConfig };
 

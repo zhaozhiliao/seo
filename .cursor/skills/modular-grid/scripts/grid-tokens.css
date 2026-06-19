@@ -1,0 +1,93 @@
+/* Paste into app/globals.css (after existing :root tokens).
+   Grid engineering vars — do NOT replace Geist color/type tokens. */
+
+:root {
+  --grid-cols: 12;
+  --grid-bl: var(--space-2);       /* 8px baseline */
+  --grid-lh: var(--space-6);       /* 24px leading = 3× baseline */
+  --grid-gutter: var(--space-6);   /* 24px — must be multiple of --grid-bl */
+  --grid-margin: var(--space-6);   /* matches Container px-6 */
+  --grid-maxw: var(--page-max);
+  --grid-content-max: var(--content-max);
+
+  /* Dev overlay tints — use --brand at low alpha, not Swiss red */
+  --grid-col-fill: color-mix(in srgb, var(--brand) 8%, transparent);
+  --grid-col-edge: color-mix(in srgb, var(--brand) 35%, transparent);
+  --grid-base-major: color-mix(in srgb, var(--info) 30%, transparent);
+  --grid-base-minor: color-mix(in srgb, var(--info) 10%, transparent);
+}
+
+/* Parent grid inside Container */
+.grid-page {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  column-gap: var(--grid-gutter);
+  row-gap: var(--grid-lh);
+}
+
+.grid-band {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  column-gap: var(--grid-gutter);
+  row-gap: var(--grid-lh);
+  align-items: start;
+}
+
+@supports not (grid-template-columns: subgrid) {
+  .grid-band {
+    grid-template-columns: repeat(var(--grid-cols), 1fr);
+  }
+}
+
+/* Overlay — MUST be inside the same max-width box as .grid-page */
+.guides {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0;
+  transition: opacity 0.26s ease;
+}
+
+body.grid-on .guides {
+  opacity: 1;
+}
+
+.guides .cols {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--grid-margin);
+  right: var(--grid-margin);
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  column-gap: var(--grid-gutter);
+}
+
+.guides .col {
+  background: var(--grid-col-fill);
+  box-shadow: inset 1px 0 0 var(--grid-col-edge), inset -1px 0 0 var(--grid-col-edge);
+}
+
+.guides .rows {
+  position: absolute;
+  left: var(--grid-margin);
+  right: var(--grid-margin);
+  top: 0;
+  bottom: 0;
+  background-image:
+    repeating-linear-gradient(to bottom, var(--grid-base-major) 0 1px, transparent 1px var(--grid-lh)),
+    repeating-linear-gradient(to bottom, var(--grid-base-minor) 0 1px, transparent 1px var(--grid-bl));
+}
+
+.guides .mline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--grid-col-edge);
+}
+
+.guides .mline.l { left: var(--grid-margin); }
+.guides .mline.r { right: var(--grid-margin); }
