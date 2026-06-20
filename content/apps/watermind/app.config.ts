@@ -30,7 +30,7 @@ export const watermind: AppConfig = {
       { icon: "shield-check", title: "本地存储", desc: "记录保存在本地，隐私更安心" },
       { icon: "feather", title: "轻量小巧", desc: "原生开发，安装包约 4MB，启动快，占用少" },
     ],
-    pricingTitle: "免费就能用，$4.99 买断。",
+    pricingTitle: "免费就能用",
     pricingSubtitle: "日常使用完全免费 —— 普通用户永远无需付费",
     plans: [
       {
@@ -41,7 +41,7 @@ export const watermind: AppConfig = {
       },
       {
         name: "Pro",
-        price: "$4.99",
+        price: "暂不提供",
         note: "一次性",
         featured: true,
         items: ["解锁全部挑战任务", "解锁多种水杯主题", "一次买断，永久使用"],
