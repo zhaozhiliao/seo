@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Check, Download, ImageIcon, icons, type LucideIcon } from "lucide-react";
 
@@ -7,6 +6,8 @@ import { CANONICAL_ROOT } from "@/lib/app-url";
 import { resolveAppLinks } from "@/lib/app-config-links";
 import { cn } from "@/lib/utils";
 import type { AppConfig, AppLanding } from "@/content/apps/app-types";
+import { LandingScreenshotCarousel } from "@/components/app/landing/landing-screenshot-carousel";
+import { resolveLandingScreenshots } from "@/components/app/landing/landing-screenshots";
 
 export interface LandingThemeProps {
   app: AppConfig;
@@ -176,15 +177,14 @@ export function LandingPricing({ landing }: { landing: AppLanding }) {
 
 /** Full-bleed screenshot for stacked theme. */
 export function LandingScreenshotBleed({ app, landing }: LandingThemeProps) {
+  const images = resolveLandingScreenshots(landing.screenshot);
+
   return (
     <section className="-mx-6 mt-12">
-      {landing.screenshot ? (
-        <Image
-          src={landing.screenshot}
+      {images.length ? (
+        <LandingScreenshotCarousel
+          images={images}
           alt={`${app.name} 产品截图`}
-          width={1200}
-          height={750}
-          className="h-auto w-full rounded-xl"
           priority
         />
       ) : (
@@ -200,15 +200,14 @@ export function LandingScreenshotBleed({ app, landing }: LandingThemeProps) {
 
 /** Card-wrapped screenshot for split theme grid column. */
 export function LandingScreenshotCard({ app, landing }: LandingThemeProps) {
+  const images = resolveLandingScreenshots(landing.screenshot);
+
   return (
     <figure>
-      {landing.screenshot ? (
-        <Image
-          src={landing.screenshot}
+      {images.length ? (
+        <LandingScreenshotCarousel
+          images={images}
           alt={`${app.name} 产品截图`}
-          width={1200}
-          height={750}
-          className="h-auto w-full rounded-xl"
           priority
         />
       ) : (

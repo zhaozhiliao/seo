@@ -27,8 +27,8 @@ export interface AppLanding {
   downloadCta?: { label: string; href?: string; disabled?: boolean };
   /** Outline buttons after download — configured per App. */
   heroCtas?: AppFooterLink[];
-  /** Hero screenshot/image src; shows a placeholder when omitted. */
-  screenshot?: string;
+  /** Hero screenshot/image src, or array for carousel. Shows placeholder when omitted. */
+  screenshot?: string | string[];
   featuresTitle?: string;
   features?: { icon?: string; title: string; desc: string }[];
   pricingTitle?: string;

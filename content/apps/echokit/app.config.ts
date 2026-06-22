@@ -16,7 +16,7 @@ export const echokit: AppConfig = {
     //   { href: "/docs", label: "文档" },
     //   { href: "/changelog", label: "更新日志" },
     // ],
-    screenshot: "/apps/watermind/hero.png",
+    screenshot: ["/apps/echokit/hero1.png", "/apps/echokit/hero2.png"],
     features: [
       {
         icon: "message-square-text",
