@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
   if (!apiKey) {
     return NextResponse.json(
-      { error: `${provider.name} API Key 未配置，请在右上角「API 设置」中填写` },
+      { error: `${provider.name} API Key 未配置，请在工具页 API 设置中填写` },
       { status: 401 }
     );
   }

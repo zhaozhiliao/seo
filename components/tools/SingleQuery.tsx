@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { ChevronDown, Search, Check, Loader2 } from "lucide-react";
 import { COUNTRY_MAP, ALL_COUNTRY_CODES, CONTINENTS, COUNTRIES_BY_CONTINENT } from "@/lib/countries";
 import { LANG_MAP } from "@/lib/languages";
@@ -12,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ToolPanel, ToolPanelBody, ToolPanelHeader } from "@/components/tools/tool-panel";
 
 type Tab = "volume-by-country" | "overview" | "multi-country";
 
@@ -38,9 +40,9 @@ function renderCountryOption(c: string, value: string, onPick: (code: string) =>
       key={c}
       type="button"
       onClick={() => onPick(c)}
-      className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left transition-colors ${isSelected ? "bg-accent text-accent-foreground font-medium" : "hover:bg-muted"}`}
+      className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left transition-colors ${isSelected ? "bg-brand-soft text-brand font-medium" : "hover:bg-bg-subtle"}`}
     >
-      <span className="font-mono text-[10px] text-muted-foreground w-6 shrink-0">{c}</span>
+      <span className="font-mono text-[10px] text-fg-muted w-6 shrink-0">{c}</span>
       <span className="flex-1">{ccfg?.name ?? c}</span>
       {isSelected && <Check size={11} className="shrink-0" />}
     </button>
@@ -58,12 +60,12 @@ function renderCountryGridItem(
       key={c}
       type="button"
       onClick={() => onToggle(c)}
-      className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors ${isSelected ? "bg-accent text-accent-foreground font-medium" : "hover:bg-muted"}`}
+      className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors ${isSelected ? "bg-brand-soft text-brand font-medium" : "hover:bg-bg-subtle"}`}
     >
-      <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 text-[10px] ${isSelected ? "bg-primary border-primary text-primary-foreground" : "border-input"}`}>
+      <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 text-[10px] ${isSelected ? "bg-brand border-brand text-white" : "border-input"}`}>
         {isSelected && "✓"}
       </span>
-      <span className="font-mono text-[9px] text-muted-foreground w-6 shrink-0">{c}</span>
+      <span className="font-mono text-[9px] text-fg-muted w-6 shrink-0">{c}</span>
       <span className="flex-1 truncate">{cfg?.name ?? c}</span>
     </button>
   );
@@ -139,16 +141,16 @@ function CountrySearchSelect({ value, onChange }: { value: string; onChange: (co
       >
         <span>
           <span className="font-medium">{cfg?.name ?? value}</span>
-          <span className="text-muted-foreground ml-1.5 text-xs">{value}</span>
+          <span className="text-fg-muted ml-1.5 text-xs">{value}</span>
         </span>
-        <ChevronDown size={13} className={`text-muted-foreground transition-transform shrink-0 ${open ? "rotate-180" : ""}`} aria-hidden="true" />
+        <ChevronDown size={13} className={`text-fg-muted transition-transform shrink-0 ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </Button>
 
       {open && (
-        <div className="absolute left-0 top-full mt-1 z-30 bg-background ring-1 ring-black/5 rounded-lg shadow-xl shadow-black/10 w-60 overflow-hidden">
+        <div className="absolute left-0 top-full mt-1 z-30 bg-bg ring-1 ring-black/5 rounded-lg shadow-xl shadow-black/10 w-60 overflow-hidden">
           <div className="p-2 border-b border-border/60">
             <div className="relative">
-              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-fg-muted" aria-hidden="true" />
               <Input
                 ref={inputRef}
                 value={search}
@@ -164,7 +166,7 @@ function CountrySearchSelect({ value, onChange }: { value: string; onChange: (co
           </div>
           <div className="max-h-56 overflow-y-auto py-1">
             {filtered.length === 0 ? (
-              <div className="text-center text-muted-foreground text-xs py-4">未找到</div>
+              <div className="text-center text-fg-muted text-xs py-4">未找到</div>
             ) : filtered.length > 40 ? (
               <VirtualList
                 items={filtered}
@@ -189,7 +191,7 @@ function CountrySearchSelect({ value, onChange }: { value: string; onChange: (co
               )
             )}
           </div>
-          <div className="px-3 py-1.5 border-t border-border/60 text-[11px] text-muted-foreground">
+          <div className="px-3 py-1.5 border-t border-border/60 text-[11px] text-fg-muted">
             共 {ALL_COUNTRY_CODES.length} 个{search ? `，筛选 ${filtered.length} 个` : ""}
           </div>
         </div>
@@ -248,7 +250,7 @@ function MultiCountryPicker({ selected, onChange, pickerRef }: { selected: strin
         aria-haspopup="listbox"
         aria-label="选择多个国家"
         tabIndex={0}
-        className="flex flex-wrap gap-1.5 min-h-[38px] items-center p-2 rounded-md border border-input bg-background cursor-text focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/25 transition"
+        className="flex flex-wrap gap-1.5 min-h-[38px] items-center p-2 rounded-md border border-input bg-bg cursor-text focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/25 transition"
         onClick={() => setOpen(true)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -258,7 +260,7 @@ function MultiCountryPicker({ selected, onChange, pickerRef }: { selected: strin
         }}
       >
         {selected.length === 0 && !open && (
-          <span className="text-sm text-muted-foreground px-1">点击选择国家…</span>
+          <span className="text-sm text-fg-muted px-1">点击选择国家…</span>
         )}
         {selected.map((c) => (
           <Badge key={c} variant="secondary" className="gap-1 pr-1 text-xs font-normal">
@@ -282,7 +284,7 @@ function MultiCountryPicker({ selected, onChange, pickerRef }: { selected: strin
             aria-label="搜索国家"
             autoComplete="off"
             spellCheck={false}
-            className="flex-1 min-w-20 bg-transparent text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/25 rounded placeholder:text-muted-foreground"
+            className="flex-1 min-w-20 bg-transparent text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/25 rounded placeholder:text-fg-muted"
             onClick={(e) => e.stopPropagation()}
           />
         )}
@@ -290,23 +292,23 @@ function MultiCountryPicker({ selected, onChange, pickerRef }: { selected: strin
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onChange([]); }}
-            className="ml-auto text-[10px] text-muted-foreground hover:text-destructive transition-colors px-1 shrink-0"
+            className="ml-auto text-[10px] text-fg-muted hover:text-error transition-colors px-1 shrink-0"
           >全清</button>
         )}
       </div>
 
       {selected.length > 0 && (
-        <div className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+        <div className="absolute -top-1.5 -right-1.5 bg-brand text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">
           {selected.length}
         </div>
       )}
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 bg-background rounded-xl shadow-xl shadow-black/10 ring-1 ring-black/5 z-30 overflow-hidden">
+        <div className="absolute left-0 right-0 top-full mt-1.5 bg-bg rounded-xl shadow-xl shadow-black/10 ring-1 ring-black/5 z-30 overflow-hidden">
           {/* Presets */}
           <div className="px-3 pt-3 pb-2 border-b border-border/60">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">快速预设</p>
+            <p className="text-[10px] font-semibold text-fg-muted uppercase tracking-wide mb-2">快速预设</p>
             <div className="flex flex-wrap gap-1.5">
               {QUICK_PRESETS.map((p) => (
                 <Button key={p.label} type="button" variant="outline" size="sm"
@@ -316,7 +318,7 @@ function MultiCountryPicker({ selected, onChange, pickerRef }: { selected: strin
               ))}
               {selected.length > 0 && (
                 <Button type="button" variant="ghost" size="sm"
-                  className="h-6 text-xs px-2 text-destructive hover:text-destructive" onClick={() => onChange([])}>
+                  className="h-6 text-xs px-2 text-error hover:text-error" onClick={() => onChange([])}>
                   清空
                 </Button>
               )}
@@ -343,7 +345,7 @@ function MultiCountryPicker({ selected, onChange, pickerRef }: { selected: strin
           {/* Country grid */}
           <div className="max-h-72 overflow-y-auto p-2">
             {filtered.length === 0 ? (
-              <div className="text-center text-muted-foreground text-sm py-6">未找到匹配国家</div>
+              <div className="text-center text-fg-muted text-sm py-6">未找到匹配国家</div>
             ) : countryRows.length > 20 ? (
               <VirtualList
                 items={countryRows}
@@ -367,7 +369,7 @@ function MultiCountryPicker({ selected, onChange, pickerRef }: { selected: strin
 
           {/* Footer */}
           <div className="px-4 py-2.5 border-t border-border/60 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-fg-muted">
               已选 <strong>{selected.length}</strong> 个国家
             </span>
             <Button type="button" size="sm" className="h-7 text-xs"
@@ -496,18 +498,13 @@ export default function SingleQuery() {
   };
 
   return (
-    <div className="rounded-2xl bg-card shadow-sm">
-      <div className="flex items-center gap-3 border-b border-border/60 px-6 py-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted">
-          <Search size={16} className="text-foreground/70" aria-hidden="true" />
-        </div>
-        <div>
-          <h2 className="text-sm font-semibold leading-tight">单个关键词查询</h2>
-          <p className="text-xs text-muted-foreground">查看各国搜索量、目标国数据或多国对比</p>
-        </div>
-      </div>
-
-      <div className="p-6 space-y-5">
+    <ToolPanel>
+      <ToolPanelHeader
+        icon={Search}
+        title="单个关键词查询"
+        description="查看各国搜索量、目标国数据或多国对比"
+      />
+      <ToolPanelBody className="space-y-5">
         <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
           <TabsList>
             {(Object.keys(tabLabels) as Tab[]).map((key) => (
@@ -520,7 +517,7 @@ export default function SingleQuery() {
             <div className="flex flex-wrap gap-2 items-center">
               <label className="flex-1 min-w-52 relative">
                 <span className="sr-only">关键词</span>
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" aria-hidden="true" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted pointer-events-none" aria-hidden="true" />
                 <Input
                   ref={keywordRef}
                   name="keyword"
@@ -554,7 +551,13 @@ export default function SingleQuery() {
           {/* Warnings / Errors */}
           {!hasKey && (
             <Alert>
-              <AlertDescription>请先在右上角「API 设置」配置 Ahrefs API Key 后再查询</AlertDescription>
+              <AlertDescription>
+                请先在工具页{" "}
+                <Link href="/settings" className="font-medium text-brand underline-offset-4 hover:underline">
+                  API 设置
+                </Link>{" "}
+                中配置 Ahrefs API Key 后再查询
+              </AlertDescription>
             </Alert>
           )}
           {tab === "multi-country" && selectedCountries.length === 0 && (
@@ -571,26 +574,26 @@ export default function SingleQuery() {
           {/* Results: volume-by-country */}
           <TabsContent value="volume-by-country">
             {volumeRows.length > 0 && (
-              <div className="overflow-auto max-h-96 rounded-xl bg-muted/40 mt-2">
+              <div className="overflow-auto max-h-96 rounded-xl bg-bg-subtle mt-2">
                 <table className="w-full text-sm">
-                  <thead className="bg-muted/50 sticky top-0">
+                  <thead className="bg-bg-subtle sticky top-0">
                     <tr>
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground">国家</th>
-                      <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground w-20">搜索量</th>
+                      <th className="text-left px-4 py-2.5 text-xs font-medium text-fg-muted">国家</th>
+                      <th className="text-right px-4 py-2.5 text-xs font-medium text-fg-muted w-20">搜索量</th>
                       <th className="px-4 py-2.5 w-36 hidden sm:table-cell" />
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {volumeRows.map((row) => (
-                      <tr key={row.country} className="hover:bg-muted/40 transition-colors">
+                      <tr key={row.country} className="hover:bg-bg-subtle transition-colors">
                         <td className="px-4 py-2">
                           <span className="font-medium">{COUNTRY_MAP[row.country.toUpperCase()]?.name ?? row.country.toUpperCase()}</span>
-                          <span className="text-muted-foreground text-xs ml-1.5">{row.country.toUpperCase()}</span>
+                          <span className="text-fg-muted text-xs ml-1.5">{row.country.toUpperCase()}</span>
                         </td>
                         <td className="px-4 py-2 text-right font-mono font-semibold tabular-nums">{formatVol(row.volume)}</td>
                         <td className="px-4 py-2 hidden sm:table-cell">
-                          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                            <div className="h-full bg-primary rounded-full" style={{ width: `${Math.max(2, (row.volume / maxVol) * 100)}%` }} />
+                          <div className="h-1.5 bg-bg-subtle rounded-full overflow-hidden">
+                            <div className="h-full bg-brand rounded-full" style={{ width: `${Math.max(2, (row.volume / maxVol) * 100)}%` }} />
                           </div>
                         </td>
                       </tr>
@@ -607,8 +610,8 @@ export default function SingleQuery() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
                 {overviewMetrics.map(({ key, label, fmt }) =>
                   overviewData[key] != null ? (
-                    <div key={key} className="rounded-xl bg-muted/50 p-4">
-                      <p className="text-xs text-muted-foreground mb-1">{label}</p>
+                    <div key={key} className="rounded-xl bg-bg-subtle p-4">
+                      <p className="text-xs text-fg-muted mb-1">{label}</p>
                       <p className="text-xl font-bold font-mono tabular-nums">{fmt(overviewData[key])}</p>
                     </div>
                   ) : null
@@ -620,12 +623,12 @@ export default function SingleQuery() {
           {/* Results: multi-country */}
           <TabsContent value="multi-country">
             {multiResults && (
-              <div className="overflow-auto max-h-96 rounded-xl bg-muted/40 mt-2">
+              <div className="overflow-auto max-h-96 rounded-xl bg-bg-subtle mt-2">
                 <table className="w-full text-sm">
-                  <thead className="bg-muted/50 sticky top-0">
+                  <thead className="bg-bg-subtle sticky top-0">
                     <tr>
                       {["国家", "搜索量", "CPC", "难度", "流量潜力"].map((h, i) => (
-                        <th key={h} className={`px-4 py-2.5 text-xs font-medium text-muted-foreground ${i === 0 ? "text-left" : "text-right"}`}>{h}</th>
+                        <th key={h} className={`px-4 py-2.5 text-xs font-medium text-fg-muted ${i === 0 ? "text-left" : "text-right"}`}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -633,15 +636,15 @@ export default function SingleQuery() {
                     {Object.entries(multiResults).map(([c, d]) => {
                       const kw = ((d as { keywords?: OverviewData[] })?.keywords?.[0] ?? d) as OverviewData;
                       return (
-                        <tr key={c} className="hover:bg-muted/40 transition-colors">
+                        <tr key={c} className="hover:bg-bg-subtle transition-colors">
                           <td className="px-4 py-2">
                             <span className="font-medium">{COUNTRY_MAP[c]?.name ?? c}</span>
-                            <span className="text-muted-foreground text-xs ml-1.5">{c}</span>
+                            <span className="text-fg-muted text-xs ml-1.5">{c}</span>
                           </td>
                           <td className="px-4 py-2 text-right font-mono font-semibold tabular-nums">{kw?.volume != null ? formatVol(Number(kw.volume)) : "—"}</td>
-                          <td className="px-4 py-2 text-right font-mono text-muted-foreground tabular-nums">{kw?.cpc != null ? formatCpc(kw.cpc) : "—"}</td>
-                          <td className="px-4 py-2 text-right font-mono text-muted-foreground tabular-nums">{kw?.difficulty != null ? String(kw.difficulty) : "—"}</td>
-                          <td className="px-4 py-2 text-right font-mono text-muted-foreground tabular-nums">{kw?.traffic_potential != null ? formatVol(Number(kw.traffic_potential)) : "—"}</td>
+                          <td className="px-4 py-2 text-right font-mono text-fg-muted tabular-nums">{kw?.cpc != null ? formatCpc(kw.cpc) : "—"}</td>
+                          <td className="px-4 py-2 text-right font-mono text-fg-muted tabular-nums">{kw?.difficulty != null ? String(kw.difficulty) : "—"}</td>
+                          <td className="px-4 py-2 text-right font-mono text-fg-muted tabular-nums">{kw?.traffic_potential != null ? formatVol(Number(kw.traffic_potential)) : "—"}</td>
                         </tr>
                       );
                     })}
@@ -651,7 +654,7 @@ export default function SingleQuery() {
             )}
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
+      </ToolPanelBody>
+    </ToolPanel>
   );
 }

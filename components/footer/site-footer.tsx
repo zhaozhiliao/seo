@@ -8,8 +8,6 @@ const PAGE_LINKS = [
   { href: "/apps", label: "Apps" },
 ];
 
-const MORE_LINKS = [{ href: "/settings", label: "设置" }];
-
 export function SiteFooter() {
   const year = new Date().getFullYear();
 
@@ -24,12 +22,7 @@ export function SiteFooter() {
         </Link>
       }
       copyright={`© ${year} wikipie`}
-      columns={
-        <>
-          <FooterLinkColumn title="Pages" links={PAGE_LINKS} />
-          <FooterLinkColumn title="More" links={MORE_LINKS} />
-        </>
-      }
+      columns={<FooterLinkColumn title="Pages" links={PAGE_LINKS} />}
     />
   );
 }

@@ -29,20 +29,20 @@ export default function CountrySelector({ selected, onChange }: Props) {
     <div className="space-y-4">
       {/* Controls */}
       <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-medium text-muted-foreground">
-          已选 <span className="text-foreground font-bold">{selected.length}</span> / {ALL_COUNTRY_CODES.length} 个国家
+        <span className="text-xs font-medium text-fg-muted">
+          已选 <span className="text-fg font-bold">{selected.length}</span> / {ALL_COUNTRY_CODES.length} 个国家
         </span>
         <div className="flex gap-1 ml-auto">
           <button type="button" onClick={() => onChange([...ALL_COUNTRY_CODES])}
-            className="px-2.5 py-1 text-xs font-medium bg-muted text-muted-foreground rounded-lg hover:bg-accent hover:text-foreground transition-colors">
+            className="px-2.5 py-1 text-xs font-medium bg-bg-subtle text-fg-muted rounded-lg hover:bg-bg-subtle hover:text-fg transition-colors">
             全选
           </button>
           <button type="button" onClick={() => onChange([])}
-            className="px-2.5 py-1 text-xs font-medium bg-muted text-muted-foreground rounded-lg hover:bg-accent hover:text-foreground transition-colors">
+            className="px-2.5 py-1 text-xs font-medium bg-bg-subtle text-fg-muted rounded-lg hover:bg-bg-subtle hover:text-fg transition-colors">
             清空
           </button>
           <button type="button" onClick={() => onChange([...DEFAULT_COUNTRIES])}
-            className="px-2.5 py-1 text-xs font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/85 transition-colors">
+            className="px-2.5 py-1 text-xs font-medium bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors">
             Guazi热门国家 ({DEFAULT_COUNTRIES.length})
           </button>
         </div>
@@ -58,16 +58,16 @@ export default function CountrySelector({ selected, onChange }: Props) {
 
           return (
             <div key={continent} className="border border-border rounded-xl overflow-hidden">
-              <div className="flex items-center gap-2.5 px-3 py-2 bg-muted/50 border-b border-border">
+              <div className="flex items-center gap-2.5 px-3 py-2 bg-bg-subtle border-b border-border">
                 <input
                   type="checkbox"
                   checked={allSelected}
                   ref={(el) => { if (el) el.indeterminate = !allSelected && someSelected; }}
                   onChange={() => selectContinent(continent)}
-                  className="w-3.5 h-3.5 accent-foreground cursor-pointer"
+                  className="h-3.5 w-3.5 cursor-pointer accent-brand"
                 />
-                <span className="text-xs font-semibold text-foreground">{continent}</span>
-                <span className="ml-auto text-[10px] text-muted-foreground bg-background border border-border px-1.5 py-0.5 rounded-full">
+                <span className="text-xs font-semibold text-fg">{continent}</span>
+                <span className="ml-auto text-[10px] text-fg-muted bg-bg border border-border px-1.5 py-0.5 rounded-full">
                   {count}/{codes.length}
                 </span>
               </div>
@@ -82,8 +82,8 @@ export default function CountrySelector({ selected, onChange }: Props) {
                       onClick={() => toggleCountry(code)}
                       className={`px-2 py-0.5 text-[11px] rounded-full border transition-all duration-100 ${
                         isOn
-                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                          : "bg-background text-muted-foreground border-border hover:border-foreground/30 hover:text-foreground"
+                          ? "bg-brand text-white border-brand shadow-sm"
+                          : "bg-bg text-fg-muted border-border hover:border-border-strong hover:text-fg"
                       }`}
                     >
                       {COUNTRY_MAP[code]?.name ?? code}

@@ -10,6 +10,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import AiStatusHint from "@/components/tools/AiStatusHint";
+import {
+  ToolPanel,
+  ToolPanelBody,
+  ToolPanelHeader,
+  toolSegment,
+  toolSegmentActive,
+  toolSegmentInactive,
+} from "@/components/tools/tool-panel";
+import { cn } from "@/lib/utils";
 
 type Mode = "url" | "text";
 
@@ -41,14 +50,14 @@ interface EeatResult {
 }
 
 function scoreColor(n: number) {
-  if (n >= 80) return "text-emerald-600";
-  if (n >= 60) return "text-amber-600";
-  return "text-destructive";
+  if (n >= 80) return "text-success";
+  if (n >= 60) return "text-warning";
+  return "text-error";
 }
 function barColor(n: number) {
-  if (n >= 80) return "bg-emerald-500";
-  if (n >= 60) return "bg-amber-500";
-  return "bg-destructive";
+  if (n >= 80) return "bg-success";
+  if (n >= 60) return "bg-warning";
+  return "bg-error";
 }
 
 export default function EeatEvaluator() {
@@ -149,27 +158,21 @@ export default function EeatEvaluator() {
 
   return (
     <div className="space-y-6">
-      {/* Input */}
-      <div className="rounded-2xl bg-card shadow-sm">
-        <div className="flex items-center gap-3 border-b border-border/60 px-6 py-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted">
-            <BadgeCheck size={16} className="text-foreground/70" />
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold leading-tight">待评估页面</h2>
-            <p className="text-xs text-muted-foreground">输入网址自动抓取，或直接粘贴内容</p>
-          </div>
-        </div>
-
-        <div className="space-y-4 p-6">
-          {/* Mode toggle */}
-          <div className="flex rounded-lg bg-muted p-0.5 text-xs font-medium w-fit">
+      <ToolPanel>
+        <ToolPanelHeader
+          icon={BadgeCheck}
+          title="待评估页面"
+          description="输入网址自动抓取，或直接粘贴内容"
+        />
+        <ToolPanelBody className="space-y-4">
+          <div className={cn(toolSegment, "w-fit")}>
             <button
               type="button"
               onClick={() => setMode("url")}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-all ${
-                mode === "url" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-              }`}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-all",
+                mode === "url" ? toolSegmentActive : toolSegmentInactive
+              )}
             >
               <LinkIcon size={13} />
               网址抓取
@@ -177,9 +180,10 @@ export default function EeatEvaluator() {
             <button
               type="button"
               onClick={() => setMode("text")}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-all ${
-                mode === "text" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-              }`}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-all",
+                mode === "text" ? toolSegmentActive : toolSegmentInactive
+              )}
             >
               <FileText size={13} />
               粘贴内容
@@ -224,50 +228,49 @@ export default function EeatEvaluator() {
               <AlertDescription className="break-all">{error}</AlertDescription>
             </Alert>
           )}
-        </div>
-      </div>
+        </ToolPanelBody>
+      </ToolPanel>
 
-      {/* Result */}
       {result && (
         <div className="space-y-6">
-          {/* Overall + dimensions */}
-          <div className="rounded-2xl bg-card shadow-sm">
-            <div className="flex items-center justify-between border-b border-border/60 px-6 py-4">
-              <h2 className="text-sm font-semibold">评估结果</h2>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-xs text-muted-foreground">综合得分</span>
-                <span className={`text-2xl font-bold ${scoreColor(result.overall)}`}>{result.overall}</span>
-                <span className="text-xs text-muted-foreground">/100</span>
-              </div>
-            </div>
-            <div className="grid gap-4 p-6 sm:grid-cols-2">
+          <ToolPanel>
+            <ToolPanelHeader
+              title="评估结果"
+              actions={
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-xs text-fg-muted">综合得分</span>
+                  <span className={`text-2xl font-bold ${scoreColor(result.overall)}`}>{result.overall}</span>
+                  <span className="text-xs text-fg-muted">/100</span>
+                </div>
+              }
+            />
+            <ToolPanelBody className="grid gap-4 sm:grid-cols-2">
               {DIMENSIONS.map((d) => {
                 const dim = result[d.key];
                 if (!dim) return null;
                 return (
-                  <div key={d.key} className="rounded-xl bg-muted/50 p-4">
+                  <div key={d.key} className="rounded-xl bg-bg-subtle p-4">
                     <div className="mb-2 flex items-center justify-between">
                       <div>
                         <span className="text-sm font-semibold">{d.label}</span>
-                        <span className="ml-1.5 font-mono text-[10px] text-muted-foreground">{d.en}</span>
+                        <span className="ml-1.5 font-mono text-[10px] text-fg-muted">{d.en}</span>
                       </div>
                       <span className={`text-lg font-bold ${scoreColor(dim.score)}`}>{dim.score}</span>
                     </div>
-                    <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-bg-subtle">
                       <div className={`h-full rounded-full ${barColor(dim.score)}`} style={{ width: `${dim.score}%` }} />
                     </div>
-                    <p className="text-xs leading-relaxed text-muted-foreground">{dim.comment}</p>
+                    <p className="text-xs leading-relaxed text-fg-muted">{dim.comment}</p>
                   </div>
                 );
               })}
-            </div>
-          </div>
+            </ToolPanelBody>
+          </ToolPanel>
 
-          {/* Lists */}
           <div className="grid gap-6 lg:grid-cols-3">
-            <ListCard title="优势" items={result.strengths} tone="emerald" />
-            <ListCard title="问题" items={result.issues} tone="destructive" />
-            <ListCard title="优化建议" items={result.suggestions} tone="primary" />
+            <ListCard title="优势" items={result.strengths} tone="success" />
+            <ListCard title="问题" items={result.issues} tone="error" />
+            <ListCard title="优化建议" items={result.suggestions} tone="brand" />
           </div>
         </div>
       )}
@@ -275,23 +278,20 @@ export default function EeatEvaluator() {
   );
 }
 
-function ListCard({ title, items, tone }: { title: string; items: string[]; tone: "emerald" | "destructive" | "primary" }) {
-  const dot =
-    tone === "emerald" ? "bg-emerald-500" : tone === "destructive" ? "bg-destructive" : "bg-primary";
+function ListCard({ title, items, tone }: { title: string; items: string[]; tone: "success" | "error" | "brand" }) {
+  const dot = tone === "success" ? "bg-success" : tone === "error" ? "bg-error" : "bg-brand";
   return (
-    <div className="rounded-2xl bg-card shadow-sm">
-      <div className="border-b border-border/60 px-5 py-3.5">
-        <h3 className="text-sm font-semibold">{title}</h3>
-      </div>
+    <ToolPanel>
+      <ToolPanelHeader title={title} className="px-5 py-3.5" />
       <ul className="space-y-2.5 p-5">
         {(items ?? []).map((it, i) => (
-          <li key={i} className="flex gap-2.5 text-xs leading-relaxed text-muted-foreground">
+          <li key={i} className="flex gap-2.5 text-xs leading-relaxed text-fg-muted">
             <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${dot}`} />
             <span>{it}</span>
           </li>
         ))}
-        {(!items || items.length === 0) && <li className="text-xs text-muted-foreground">—</li>}
+        {(!items || items.length === 0) && <li className="text-xs text-fg-muted">—</li>}
       </ul>
-    </div>
+    </ToolPanel>
   );
 }

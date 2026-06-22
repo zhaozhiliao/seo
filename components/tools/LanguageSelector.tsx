@@ -37,9 +37,9 @@ export default function LanguageSelector({ selected, onChange }: Props) {
     <div className="space-y-3">
       {/* Controls */}
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-foreground">
+        <span className="text-xs font-semibold text-fg">
           选择查询语言
-          <span className="ml-2 text-muted-foreground font-normal">
+          <span className="ml-2 text-fg-muted font-normal">
             已选 {selected.length} / {ALL_LANGS.length} 种
           </span>
         </span>
@@ -47,21 +47,21 @@ export default function LanguageSelector({ selected, onChange }: Props) {
           <button
             type="button"
             onClick={selectDefault}
-            className="px-2 py-1 text-[11px] font-medium bg-muted text-muted-foreground rounded-md hover:bg-accent hover:text-foreground transition-colors"
+            className="px-2 py-1 text-[11px] font-medium bg-bg-subtle text-fg-muted rounded-md hover:bg-bg-subtle hover:text-fg transition-colors"
           >
             默认 5 种
           </button>
           <button
             type="button"
             onClick={selectAll}
-            className="px-2 py-1 text-[11px] font-medium bg-muted text-muted-foreground rounded-md hover:bg-accent hover:text-foreground transition-colors"
+            className="px-2 py-1 text-[11px] font-medium bg-bg-subtle text-fg-muted rounded-md hover:bg-bg-subtle hover:text-fg transition-colors"
           >
             全选
           </button>
           <button
             type="button"
             onClick={clearAll}
-            className="px-2 py-1 text-[11px] font-medium bg-muted text-muted-foreground rounded-md hover:bg-accent hover:text-foreground transition-colors"
+            className="px-2 py-1 text-[11px] font-medium bg-bg-subtle text-fg-muted rounded-md hover:bg-bg-subtle hover:text-fg transition-colors"
           >
             仅英语
           </button>
@@ -82,7 +82,7 @@ export default function LanguageSelector({ selected, onChange }: Props) {
               className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all duration-150 select-none ${
                 isSelected
                   ? `${cfg.badge} shadow-sm`
-                  : "bg-background border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                  : "bg-bg border-border text-fg-muted hover:border-border-strong hover:text-fg"
               }`}
             >
               {/* Lang code badge */}
@@ -91,7 +91,7 @@ export default function LanguageSelector({ selected, onChange }: Props) {
               </span>
               {/* Names */}
               <span className="flex flex-col leading-tight text-left">
-                <span className={`text-[11px] font-semibold ${isSelected ? "" : "text-muted-foreground"}`}>
+                <span className={`text-[11px] font-semibold ${isSelected ? "" : "text-fg-muted"}`}>
                   {cfg.name}
                 </span>
                 <span className={`text-[10px] ${isSelected ? "opacity-70" : "opacity-40"} ${cfg.rtl ? "text-right" : ""}`}
@@ -109,7 +109,7 @@ export default function LanguageSelector({ selected, onChange }: Props) {
       </div>
 
       {/* Hint */}
-      <p className="text-[11px] text-muted-foreground leading-relaxed">
+      <p className="text-[11px] text-fg-muted leading-relaxed">
         选择的语言决定模板的列结构（
         <span className="font-mono">keyword_en</span>、
         <span className="font-mono">keyword_de</span>…）。

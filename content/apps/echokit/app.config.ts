@@ -8,7 +8,7 @@ export const echokit: AppConfig = {
   logo: "/apps/echokit/icon.png",
   brandColor: "#0049ff",
   landing: {
-    theme: "stacked",
+    theme: "split",
     headline: "EchoKit·回音",
     subhead: "面向开发者的轻量级反馈 SDK",
     downloadCta: { label: "暂不提供" },

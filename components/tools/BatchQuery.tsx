@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import Link from "next/link";
 import { Upload, Download, Zap, LayoutGrid, Settings2, Languages, Globe, Info } from "lucide-react";
 import CountrySelector from "./CountrySelector";
 import LanguageSelector from "./LanguageSelector";
@@ -16,6 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { toolInset, ToolPanel, ToolPanelBody, ToolPanelHeader } from "@/components/tools/tool-panel";
+import { cn } from "@/lib/utils";
 
 type MatchMode = "smart" | "full";
 type PanelType = "lang" | "country" | "mapping" | null;
@@ -252,33 +255,26 @@ export default function BatchQuery() {
   const overrideCount = Object.keys(langOverrides).length;
 
   return (
-    <div className="rounded-2xl bg-card shadow-sm">
-      {/* Header */}
-      <div className="px-6 py-4 flex items-center justify-between gap-3 border-b border-border/60">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted">
-            <LayoutGrid size={16} className="text-foreground/70" aria-hidden="true" />
+    <ToolPanel>
+      <ToolPanelHeader
+        icon={LayoutGrid}
+        title="批量关键词查询"
+        description="上传 Excel / CSV，多语言多国家一次查询"
+        actions={
+          <div className="flex items-center gap-2">
+            {rows.length > 0 && <Badge variant="secondary">{rows.length} 条结果</Badge>}
+            {overrideCount > 0 && matchMode === "smart" && (
+              <Badge variant="outline">{overrideCount} 个自定义映射</Badge>
+            )}
           </div>
-          <div>
-            <h2 className="text-sm font-semibold leading-tight">批量关键词查询</h2>
-            <p className="text-xs text-muted-foreground">上传 Excel / CSV，多语言多国家一次查询</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {rows.length > 0 && (
-            <Badge variant="secondary">{rows.length} 条结果</Badge>
-          )}
-          {overrideCount > 0 && matchMode === "smart" && (
-            <Badge variant="outline">{overrideCount} 个自定义映射</Badge>
-          )}
-        </div>
-      </div>
+        }
+      />
 
-      <div className="p-6 space-y-4">
+      <ToolPanelBody className="space-y-4">
 
         {/* Row 1: Template + Upload + Export */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted-foreground">下载模板:</span>
+          <span className="text-xs text-fg-muted">下载模板:</span>
           <Button type="button" variant="outline" size="sm" onClick={() => downloadTemplateCsv(selectedLangs)}>CSV</Button>
           <Button type="button" variant="outline" size="sm" onClick={() => downloadTemplateXlsx(selectedLangs)}>Excel</Button>
 
@@ -333,13 +329,13 @@ export default function BatchQuery() {
         {/* Row 2: View controls */}
         <div className="flex flex-wrap items-center gap-2 pt-3">
           {/* Match mode */}
-          <div className="flex rounded-lg bg-muted p-0.5 text-xs font-medium">
+          <div className="flex rounded-lg bg-bg-subtle p-0.5 text-xs font-medium">
             <button type="button" onClick={() => setMatchMode("smart")} aria-pressed={matchMode === "smart"}
-              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-[color,background-color,box-shadow] ${matchMode === "smart" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-[color,background-color,box-shadow] ${matchMode === "smart" ? "bg-bg text-fg shadow-sm" : "text-fg-muted hover:text-fg"}`}>
               <Zap size={11} aria-hidden="true" />智能匹配
             </button>
             <button type="button" onClick={() => setMatchMode("full")} aria-pressed={matchMode === "full"}
-              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-[color,background-color,box-shadow] ${matchMode === "full" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-[color,background-color,box-shadow] ${matchMode === "full" ? "bg-bg text-fg shadow-sm" : "text-fg-muted hover:text-fg"}`}>
               <LayoutGrid size={11} aria-hidden="true" />全量结果
             </button>
           </div>
@@ -371,7 +367,7 @@ export default function BatchQuery() {
 
         {/* Expandable panels */}
         {openPanel === "mapping" && (
-          <div className="rounded-xl bg-muted/50 p-4 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+          <div className={cn(toolInset, "shadow-inner")}>
             <LangMappingPanel
               selectedCountries={selectedCountries}
               overrides={langOverrides}
@@ -383,12 +379,12 @@ export default function BatchQuery() {
           </div>
         )}
         {openPanel === "lang" && (
-          <div className="rounded-xl bg-muted/50 p-4 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+          <div className={cn(toolInset, "shadow-inner")}>
             <LanguageSelector selected={selectedLangs} onChange={setSelectedLangs} />
           </div>
         )}
         {openPanel === "country" && (
-          <div className="rounded-xl bg-muted/50 p-4 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+          <div className={cn(toolInset, "shadow-inner")}>
             <CountrySelector selected={selectedCountries} onChange={setSelectedCountries} />
           </div>
         )}
@@ -396,7 +392,13 @@ export default function BatchQuery() {
         {/* Notices */}
         {!hasKey && (
           <Alert>
-            <AlertDescription>请先在右上角「API 设置」配置 Ahrefs API Key 后再使用批量查询</AlertDescription>
+            <AlertDescription>
+              请先在工具页{" "}
+              <Link href="/settings" className="font-medium text-brand underline-offset-4 hover:underline">
+                API 设置
+              </Link>{" "}
+              中配置 Ahrefs API Key 后再使用批量查询
+            </AlertDescription>
           </Alert>
         )}
         {detectedNote && !running && (
@@ -414,9 +416,9 @@ export default function BatchQuery() {
         {/* Progress */}
         {progress && (
           <div className="space-y-2" aria-live="polite" aria-atomic="true">
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-xs text-fg-muted">
               <span className="flex items-center gap-2">
-                {running && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />}
+                {running && <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" aria-hidden="true" />}
                 {running ? "处理中…" : "已完成"} {progress.done} / {progress.total}
               </span>
               <span className="font-mono font-semibold tabular-nums">{pct}%</span>
@@ -440,14 +442,14 @@ export default function BatchQuery() {
         {/* Empty state */}
         {!running && rows.length === 0 && !error && (
           <div className="flex flex-col items-center justify-center py-14 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mb-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-              <Upload size={18} className="text-muted-foreground" aria-hidden="true" />
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-bg-subtle shadow-sm">
+              <Upload size={18} className="text-fg-muted" aria-hidden="true" />
             </div>
             <p className="text-sm font-medium mb-1">上传 Excel 或 CSV 文件开始批量查询</p>
-            <p className="text-xs text-muted-foreground">先选择语言并下载模板，填写关键词后上传</p>
+            <p className="text-xs text-fg-muted">先选择语言并下载模板，填写关键词后上传</p>
           </div>
         )}
-      </div>
-    </div>
+      </ToolPanelBody>
+    </ToolPanel>
   );
 }

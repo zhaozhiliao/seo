@@ -14,6 +14,10 @@ import { cn } from "@/lib/utils";
 
 const AUTO_INTERVAL_MS = 5000;
 
+/** Fixed viewport — images scale inside without resizing the layout. */
+const SCREENSHOT_VIEWPORT =
+  "relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-bg-subtle";
+
 function ScreenshotLightbox({
   images,
   alt,
@@ -46,13 +50,13 @@ function ScreenshotLightbox({
           {multiple ? `第 ${index + 1} 张，共 ${count} 张` : alt}
         </DialogDescription>
 
-        <div className="group/lightbox relative">
+        <div className="relative flex max-h-[85vh] w-full items-center justify-center overflow-hidden rounded-xl bg-bg-subtle">
           <Image
             src={images[index]!}
             alt={multiple ? `${alt}（${index + 1}/${count}）` : alt}
             width={2400}
             height={1500}
-            className="h-auto max-h-[85vh] w-full rounded-xl object-contain"
+            className="max-h-[85vh] w-auto max-w-full object-contain"
           />
 
           {multiple && (
@@ -61,7 +65,7 @@ function ScreenshotLightbox({
                 type="button"
                 onClick={prev}
                 aria-label="上一张"
-                className="absolute top-1/2 left-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-bg/90 text-fg-muted shadow-sm backdrop-blur-sm transition-colors hover:text-fg focus-visible:ring-2 focus-visible:ring-ring/25"
+                className="absolute top-1/2 left-2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-bg/90 text-fg-muted shadow-sm backdrop-blur-sm transition-colors hover:text-fg focus-visible:ring-2 focus-visible:ring-ring/25"
               >
                 <ChevronLeft size={18} aria-hidden="true" />
               </button>
@@ -69,7 +73,7 @@ function ScreenshotLightbox({
                 type="button"
                 onClick={next}
                 aria-label="下一张"
-                className="absolute top-1/2 right-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-bg/90 text-fg-muted shadow-sm backdrop-blur-sm transition-colors hover:text-fg focus-visible:ring-2 focus-visible:ring-ring/25"
+                className="absolute top-1/2 right-2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-bg/90 text-fg-muted shadow-sm backdrop-blur-sm transition-colors hover:text-fg focus-visible:ring-2 focus-visible:ring-ring/25"
               >
                 <ChevronRight size={18} aria-hidden="true" />
               </button>
@@ -81,16 +85,57 @@ function ScreenshotLightbox({
   );
 }
 
+function ScreenshotSlide({
+  src,
+  alt,
+  priority,
+  visible,
+  onOpen,
+  imageAlign,
+}: {
+  src: string;
+  alt: string;
+  priority?: boolean;
+  visible: boolean;
+  onOpen: () => void;
+  imageAlign?: "left" | "center";
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`查看大图：${alt}`}
+      aria-hidden={!visible}
+      tabIndex={visible ? 0 : -1}
+      className={cn(
+        "absolute inset-0 cursor-zoom-in transition-opacity duration-500 motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-inset focus-visible:outline-none",
+        visible ? "opacity-100" : "pointer-events-none opacity-0"
+      )}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(max-width: 768px) 100vw, 1200px"
+        className={cn("object-contain", imageAlign === "left" && "object-left")}
+        priority={priority}
+      />
+    </button>
+  );
+}
+
 export function LandingScreenshotCarousel({
   images,
   alt,
   className,
   priority = false,
+  imageAlign = "center",
 }: {
   images: string[];
   alt: string;
   className?: string;
   priority?: boolean;
+  imageAlign?: "left" | "center";
 }) {
   const count = images.length;
   const [index, setIndex] = useState(0);
@@ -113,34 +158,52 @@ export function LandingScreenshotCarousel({
 
   const openLightbox = () => setLightboxOpen(true);
 
-  const imageButton = (src: string, i: number, visible: boolean) => (
-    <button
-      key={src}
-      type="button"
-      onClick={openLightbox}
-      aria-label={`查看大图：${alt}${multiple ? `（${i + 1}/${count}）` : ""}`}
-      aria-hidden={multiple ? !visible : undefined}
-      tabIndex={multiple && !visible ? -1 : 0}
-      className={cn(
-        "block w-full cursor-zoom-in rounded-xl transition-opacity duration-500 motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:outline-none",
-        multiple && (visible ? "relative opacity-100" : "pointer-events-none absolute inset-0 opacity-0")
-      )}
+  const viewport = (
+    <div
+      className={SCREENSHOT_VIEWPORT}
+      onMouseEnter={multiple ? () => setIsHovered(true) : undefined}
+      onMouseLeave={multiple ? () => setIsHovered(false) : undefined}
+      {...(multiple ? { "aria-roledescription": "carousel", "aria-label": alt } : {})}
     >
-      <Image
-        src={src}
-        alt={multiple ? `${alt}（${i + 1}/${count}）` : alt}
-        width={1200}
-        height={750}
-        className="h-auto w-full rounded-xl"
-        priority={priority && i === 0}
-      />
-    </button>
+      {images.map((src, i) => (
+        <ScreenshotSlide
+          key={src}
+          src={src}
+          alt={multiple ? `${alt}（${i + 1}/${count}）` : alt}
+          priority={priority && i === 0}
+          visible={!multiple || i === index}
+          onOpen={openLightbox}
+          imageAlign={imageAlign}
+        />
+      ))}
+
+      {multiple && (
+        <>
+          <button
+            type="button"
+            onClick={prev}
+            aria-label="上一张"
+            className="absolute top-1/2 left-2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-bg/90 text-fg-muted opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100 hover:text-fg focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/25"
+          >
+            <ChevronLeft size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={next}
+            aria-label="下一张"
+            className="absolute top-1/2 right-2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-bg/90 text-fg-muted opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100 hover:text-fg focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/25"
+          >
+            <ChevronRight size={16} aria-hidden="true" />
+          </button>
+        </>
+      )}
+    </div>
   );
 
   if (!multiple) {
     return (
       <>
-        <div className={className}>{imageButton(images[0]!, 0, true)}</div>
+        <div className={className}>{viewport}</div>
         <ScreenshotLightbox
           images={images}
           alt={alt}
@@ -156,32 +219,7 @@ export function LandingScreenshotCarousel({
   return (
     <>
       <div className={cn("group relative", className)}>
-        <div
-          className="relative overflow-hidden rounded-xl"
-          aria-roledescription="carousel"
-          aria-label={alt}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          {images.map((src, i) => imageButton(src, i, i === index))}
-        </div>
-
-        <button
-          type="button"
-          onClick={prev}
-          aria-label="上一张"
-          className="absolute top-1/2 left-2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-bg/90 text-fg-muted opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100 hover:text-fg focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/25"
-        >
-          <ChevronLeft size={16} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          onClick={next}
-          aria-label="下一张"
-          className="absolute top-1/2 right-2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-bg/90 text-fg-muted opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100 hover:text-fg focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/25"
-        >
-          <ChevronRight size={16} aria-hidden="true" />
-        </button>
+        {viewport}
 
         <div className="mt-3 flex justify-center gap-1.5" role="tablist" aria-label="截图切换">
           {images.map((src, i) => (

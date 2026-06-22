@@ -18,6 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import AiStatusHint from "@/components/tools/AiStatusHint";
+import { ToolPanel, ToolPanelBody, ToolPanelHeader } from "@/components/tools/tool-panel";
+import { cn } from "@/lib/utils";
 
 export default function SchemaBuilder() {
   const { selectedProvider, activeKey, hasActiveKey } = useAiKeys();
@@ -143,18 +145,13 @@ export default function SchemaBuilder() {
     <div className="grid gap-6 lg:grid-cols-2">
       {/* ── Form ── */}
       <div className="space-y-6">
-        <div className="rounded-2xl bg-card shadow-sm">
-          <div className="flex items-center gap-3 border-b border-border/60 px-6 py-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted">
-              <Code2 size={16} className="text-foreground/70" />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold leading-tight">数据类型与字段</h2>
-              <p className="text-xs text-muted-foreground">选择类型并填写内容</p>
-            </div>
-          </div>
-
-          <div className="space-y-4 p-6">
+        <ToolPanel>
+          <ToolPanelHeader
+            icon={Code2}
+            title="数据类型与字段"
+            description="选择类型并填写内容"
+          />
+          <ToolPanelBody className="space-y-4">
             {/* Type selector */}
             <div className="flex flex-wrap gap-1.5">
               {SCHEMA_TYPES.map((t) => {
@@ -165,7 +162,7 @@ export default function SchemaBuilder() {
                     type="button"
                     onClick={() => setTypeId(t.id)}
                     className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                      on ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+                      on ? "bg-brand text-white" : "bg-bg-subtle text-fg-muted hover:text-fg"
                     }`}
                   >
                     {t.label}
@@ -197,7 +194,7 @@ export default function SchemaBuilder() {
                               type="button"
                               onClick={() => setField(field.key, opt.value)}
                               className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                                on ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+                                on ? "bg-brand text-white" : "bg-bg-subtle text-fg-muted hover:text-fg"
                               }`}
                             >
                               {opt.label}
@@ -214,7 +211,7 @@ export default function SchemaBuilder() {
                     <div key={field.key} className="space-y-2">
                       <Label>{field.label}</Label>
                       {faqItems.map((item, i) => (
-                        <div key={i} className="space-y-1.5 rounded-xl bg-muted/50 p-3">
+                        <div key={i} className="space-y-1.5 rounded-xl bg-bg-subtle p-3">
                           <div className="flex items-center gap-2">
                             <Input
                               value={item.q}
@@ -230,7 +227,7 @@ export default function SchemaBuilder() {
                               variant="ghost"
                               size="icon-sm"
                               onClick={() => setFaq(faqItems.filter((_, idx) => idx !== i))}
-                              className="shrink-0 text-muted-foreground hover:text-destructive"
+                              className="shrink-0 text-fg-muted hover:text-error"
                             >
                               <Trash2 size={14} />
                             </Button>
@@ -243,7 +240,7 @@ export default function SchemaBuilder() {
                               setFaq(next);
                             }}
                             placeholder="答案"
-                            className="min-h-16 bg-background"
+                            className="min-h-16 bg-bg"
                           />
                         </div>
                       ))}
@@ -261,7 +258,7 @@ export default function SchemaBuilder() {
                       <Label>{field.label}</Label>
                       {crumbItems.map((item, i) => (
                         <div key={i} className="flex items-center gap-2">
-                          <span className="w-5 shrink-0 text-center text-xs text-muted-foreground">{i + 1}</span>
+                          <span className="w-5 shrink-0 text-center text-xs text-fg-muted">{i + 1}</span>
                           <Input
                             value={item.name}
                             onChange={(e) => {
@@ -286,7 +283,7 @@ export default function SchemaBuilder() {
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => setCrumbs(crumbItems.filter((_, idx) => idx !== i))}
-                            className="shrink-0 text-muted-foreground hover:text-destructive"
+                            className="shrink-0 text-fg-muted hover:text-error"
                           >
                             <Trash2 size={14} />
                           </Button>
@@ -326,24 +323,26 @@ export default function SchemaBuilder() {
                 );
               })}
             </div>
-          </div>
-        </div>
+          </ToolPanelBody>
+        </ToolPanel>
 
-        {/* AI assist */}
-        <div className="rounded-2xl bg-card shadow-sm">
+        <ToolPanel>
           <button
             type="button"
             onClick={() => setAiOpen((v) => !v)}
-            className="flex w-full items-center justify-between px-6 py-4 text-left"
+            className={cn(
+              "flex w-full items-center justify-between px-6 py-4 text-left",
+              aiOpen && "border-b border-border/60"
+            )}
           >
             <div className="flex items-center gap-2">
-              <Wand2 size={15} className="text-foreground/70" />
-              <span className="text-sm font-semibold">AI 从描述生成</span>
+              <Wand2 size={15} className="text-fg-muted" />
+              <span className="text-sm font-semibold text-fg">AI 从描述生成</span>
             </div>
-            <ChevronDown size={16} className={`text-muted-foreground transition-transform ${aiOpen ? "rotate-180" : ""}`} />
+            <ChevronDown size={16} className={cn("text-fg-muted transition-transform", aiOpen && "rotate-180")} />
           </button>
           {aiOpen && (
-            <div className="space-y-3 border-t border-border/60 p-6">
+            <ToolPanelBody className="space-y-3 border-t-0 pt-0">
               <Textarea
                 value={aiDesc}
                 onChange={(e) => setAiDesc(e.target.value)}
@@ -360,36 +359,39 @@ export default function SchemaBuilder() {
                   <AlertDescription className="break-all">{aiError}</AlertDescription>
                 </Alert>
               )}
-            </div>
+            </ToolPanelBody>
           )}
-        </div>
+        </ToolPanel>
       </div>
 
       {/* ── Output ── */}
       <div className="lg:sticky lg:top-20 lg:self-start">
-        <div className="rounded-2xl bg-card shadow-sm">
-          <div className="flex items-center justify-between gap-3 border-b border-border/60 px-6 py-4">
-            <h2 className="text-sm font-semibold">JSON-LD 输出</h2>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setWrapScript((v) => !v)}
-                className={`rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
-                  wrapScript ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {"<script>"} 包裹
-              </button>
-              <Button variant="outline" size="sm" className="gap-1.5" onClick={copy}>
-                {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
-                {copied ? "已复制" : "复制"}
-              </Button>
-            </div>
-          </div>
-          <pre className="max-h-[36rem] overflow-auto rounded-b-2xl bg-muted/40 p-4 text-xs leading-relaxed">
-            <code className="font-mono text-foreground">{output}</code>
+        <ToolPanel>
+          <ToolPanelHeader
+            title="JSON-LD 输出"
+            actions={
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setWrapScript((v) => !v)}
+                  className={cn(
+                    "rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
+                    wrapScript ? "bg-brand text-white" : "bg-bg-subtle text-fg-muted hover:text-fg"
+                  )}
+                >
+                  {"<script>"} 包裹
+                </button>
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={copy}>
+                  {copied ? <Check size={13} className="text-success" /> : <Copy size={13} />}
+                  {copied ? "已复制" : "复制"}
+                </Button>
+              </div>
+            }
+          />
+          <pre className="max-h-[36rem] overflow-auto rounded-b-xl bg-bg-subtle p-4 text-xs leading-relaxed">
+            <code className="font-mono text-fg">{output}</code>
           </pre>
-        </div>
+        </ToolPanel>
       </div>
     </div>
   );

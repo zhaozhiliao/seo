@@ -175,16 +175,17 @@ export function LandingPricing({ landing }: { landing: AppLanding }) {
   );
 }
 
-/** Full-bleed screenshot for stacked theme. */
+/** Full-bleed screenshot for stacked theme — aligns with hero text column. */
 export function LandingScreenshotBleed({ app, landing }: LandingThemeProps) {
   const images = resolveLandingScreenshots(landing.screenshot);
 
   return (
-    <section className="-mx-6 mt-12">
+    <section className="mt-12">
       {images.length ? (
         <LandingScreenshotCarousel
           images={images}
           alt={`${app.name} 产品截图`}
+          imageAlign="left"
           priority
         />
       ) : (

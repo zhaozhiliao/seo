@@ -9,6 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import AiStatusHint from "@/components/tools/AiStatusHint";
+import {
+  ToolPanel,
+  ToolPanelBody,
+  ToolPanelHeader,
+  toolChipActive,
+  toolChipInactive,
+  toolInset,
+} from "@/components/tools/tool-panel";
+import { cn } from "@/lib/utils";
 
 const TARGET_LANGS = [
   { code: "en", label: "English" },
@@ -117,18 +126,13 @@ export default function UiTranslator() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl bg-card shadow-sm">
-        <div className="flex items-center gap-3 border-b border-border/60 px-6 py-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted">
-            <Languages size={16} className="text-foreground/70" />
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold leading-tight">原始文案</h2>
-            <p className="text-xs text-muted-foreground">输入任意语言的 UI 文案</p>
-          </div>
-        </div>
-
-        <div className="space-y-4 p-6">
+      <ToolPanel>
+        <ToolPanelHeader
+          icon={Languages}
+          title="原始文案"
+          description="输入任意语言的 UI 文案"
+        />
+        <ToolPanelBody className="space-y-4">
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -138,7 +142,7 @@ export default function UiTranslator() {
 
           {/* Target languages */}
           <div>
-            <p className="mb-2 text-xs font-medium text-muted-foreground">目标语言（可多选）</p>
+            <p className="mb-2 text-xs font-medium text-fg-muted">目标语言（可多选）</p>
             <div className="flex flex-wrap gap-1.5">
               {TARGET_LANGS.map((l) => {
                 const on = targets.includes(l.code);
@@ -147,11 +151,10 @@ export default function UiTranslator() {
                     key={l.code}
                     type="button"
                     onClick={() => toggleTarget(l.code)}
-                    className={`rounded-lg border px-2.5 py-1 text-xs font-medium transition-all ${
-                      on
-                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                        : "border-border bg-background text-muted-foreground hover:border-foreground/30 hover:text-foreground"
-                    }`}
+                    className={cn(
+                      "rounded-lg border px-2.5 py-1 text-xs font-medium transition-all",
+                      on ? toolChipActive : toolChipInactive
+                    )}
                   >
                     {l.label}
                   </button>
@@ -161,24 +164,24 @@ export default function UiTranslator() {
           </div>
 
           {/* Custom prompt module */}
-          <div className="rounded-xl bg-muted/50 p-4">
+          <div className={toolInset}>
             <button
               type="button"
               onClick={() => setPromptOpen((v) => !v)}
               className="flex w-full items-center justify-between text-left"
             >
-              <span className="text-xs font-semibold text-foreground">自定义翻译提示词</span>
-              <ChevronDown size={14} className={`text-muted-foreground transition-transform ${promptOpen ? "rotate-180" : ""}`} />
+              <span className="text-xs font-semibold text-fg">自定义翻译提示词</span>
+              <ChevronDown size={14} className={`text-fg-muted transition-transform ${promptOpen ? "rotate-180" : ""}`} />
             </button>
             {promptOpen && (
               <div className="mt-3 space-y-2">
                 <Textarea
                   value={prompt}
                   onChange={(e) => savePrompt(e.target.value)}
-                  className="min-h-40 resize-y bg-background font-mono text-xs leading-relaxed"
+                  className="min-h-40 resize-y bg-bg font-mono text-xs leading-relaxed"
                 />
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">提示词自动保存在本地浏览器</span>
+                  <span className="text-[11px] text-fg-muted">提示词自动保存在本地浏览器</span>
                   <Button variant="ghost" size="sm" className="gap-1.5 text-xs" onClick={resetPrompt}>
                     <RotateCcw size={12} />
                     恢复默认
@@ -205,37 +208,34 @@ export default function UiTranslator() {
               <AlertDescription className="break-all">{error}</AlertDescription>
             </Alert>
           )}
-        </div>
-      </div>
+        </ToolPanelBody>
+      </ToolPanel>
 
-      {/* Results */}
       {resultEntries.length > 0 && (
-        <div className="rounded-2xl bg-card shadow-sm">
-          <div className="border-b border-border/60 px-6 py-4">
-            <h2 className="text-sm font-semibold">翻译结果</h2>
-          </div>
+        <ToolPanel>
+          <ToolPanelHeader title="翻译结果" />
           <div className="divide-y divide-border/60">
             {resultEntries.map(([code, value]) => {
               const label = TARGET_LANGS.find((l) => l.code === code)?.label ?? code;
               const rtl = code === "ar";
               return (
                 <div key={code} className="flex items-start gap-3 px-6 py-4">
-                  <span className="mt-0.5 w-20 shrink-0 text-xs font-medium text-muted-foreground">{label}</span>
+                  <span className="mt-0.5 w-20 shrink-0 text-xs font-medium text-fg-muted">{label}</span>
                   <p
-                    className="min-w-0 flex-1 text-sm text-foreground"
+                    className="min-w-0 flex-1 text-sm text-fg"
                     dir={rtl ? "rtl" : undefined}
                   >
                     {value}
                   </p>
                   <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={() => copy(code, value)}>
-                    {copied === code ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
+                    {copied === code ? <Check size={13} className="text-success" /> : <Copy size={13} />}
                     {copied === code ? "已复制" : "复制"}
                   </Button>
                 </div>
               );
             })}
           </div>
-        </div>
+        </ToolPanel>
       )}
     </div>
   );

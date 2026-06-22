@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useAiKeys } from "@/components/context/AiKeysContext";
 import { getProvider } from "@/lib/ai/providers";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -12,7 +13,11 @@ export default function AiStatusHint() {
   return (
     <Alert>
       <AlertDescription>
-        请先点击右上角「API 设置」配置 {provider?.name ?? "AI"} API Key 后再使用。
+        请先在工具页{" "}
+        <Link href="/settings" className="font-medium text-brand underline-offset-4 hover:underline">
+          API 设置
+        </Link>{" "}
+        中配置 {provider?.name ?? "AI"} API Key 后再使用。
       </AlertDescription>
     </Alert>
   );

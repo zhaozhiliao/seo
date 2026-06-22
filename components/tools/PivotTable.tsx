@@ -52,16 +52,16 @@ function fmtVol(v: number | null): string {
 }
 
 function volCell(v: number | null): string {
-  if (v === null) return "text-muted-foreground/40";
-  if (v >= 10000) return "bg-emerald-500/10 text-emerald-700 font-semibold";
-  if (v >= 1000) return "bg-emerald-500/5 text-emerald-600";
-  if (v >= 100) return "bg-amber-500/10 text-amber-700";
+  if (v === null) return "text-fg-subtle";
+  if (v >= 10000) return "bg-success/10 text-success font-semibold";
+  if (v >= 1000) return "bg-success/5 text-success";
+  if (v >= 100) return "bg-warning/10 text-warning";
   if (v > 0) return "bg-orange-500/10 text-orange-600";
-  return "text-muted-foreground/40";
+  return "text-fg-subtle";
 }
 
 function getBadge(lang: string): string {
-  return LANG_MAP[lang]?.badge ?? "bg-muted text-muted-foreground border-border";
+  return LANG_MAP[lang]?.badge ?? "bg-bg-subtle text-fg-muted border-border";
 }
 
 function isRtl(lang: string): boolean {
@@ -84,12 +84,12 @@ export default function PivotTable({
       <div className="overflow-auto rounded-xl border border-border max-h-[65vh]">
         <table className="text-xs border-collapse w-full">
           <thead className="sticky top-0 z-10">
-            <tr className="bg-muted/50 border-b border-border">
+            <tr className="bg-bg-subtle border-b border-border">
               {langs.map((lang) => (
                 <th
                   key={lang}
                   rowSpan={2}
-                  className="border-r border-border px-3 py-2.5 text-left font-semibold text-muted-foreground min-w-28 align-middle"
+                  className="border-r border-border px-3 py-2.5 text-left font-semibold text-fg-muted min-w-28 align-middle"
                 >
                   <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[10px] font-bold uppercase ${getBadge(lang)}`}>
                     {lang}
@@ -102,28 +102,28 @@ export default function PivotTable({
                   <th
                     key={c}
                     colSpan={langs.length}
-                    className="border-r border-border px-2 py-2 text-center font-semibold text-foreground text-[11px] border-b border-border"
+                    className="border-r border-border px-2 py-2 text-center font-semibold text-fg text-[11px] border-b border-border"
                   >
                     {cfg?.name ?? c}{" "}
-                    <span className="text-muted-foreground font-normal text-[10px]">({c})</span>
+                    <span className="text-fg-muted font-normal text-[10px]">({c})</span>
                   </th>
                 );
               })}
             </tr>
-            <tr className="bg-muted/50 border-b border-border">
+            <tr className="bg-bg-subtle border-b border-border">
               {countries.map((c) =>
                 langs.map((lang) => {
                   const isPrimary = COUNTRY_MAP[c]?.lang === lang;
                   return (
                     <th
                       key={`${c}-${lang}`}
-                      className={`border-r border-border px-1 py-1.5 text-center min-w-[3rem] ${isPrimary ? "bg-primary/10" : ""}`}
+                      className={`border-r border-border px-1 py-1.5 text-center min-w-[3rem] ${isPrimary ? "bg-brand/10" : ""}`}
                       title={`${COUNTRY_MAP[c]?.name ?? c} — ${lang.toUpperCase()}${isPrimary ? " (主要语言)" : ""}`}
                     >
                       <span className={`inline-flex items-center px-1 py-0.5 rounded text-[9px] font-bold uppercase border ${getBadge(lang)}`}>
                         {lang}
                       </span>
-                      {isPrimary && <div className="text-[8px] text-primary/70 mt-0.5">主</div>}
+                      {isPrimary && <div className="text-[8px] text-brand/70 mt-0.5">主</div>}
                     </th>
                   );
                 })
@@ -134,10 +134,10 @@ export default function PivotTable({
             {rows.map((row, i) => (
               <tr
                 key={i}
-                className={`border-b border-border/60 hover:bg-primary/5 transition-colors ${i % 2 === 1 ? "bg-muted/30" : "bg-background"}`}
+                className={`border-b border-border/60 hover:bg-brand/5 transition-colors ${i % 2 === 1 ? "bg-bg-subtle/80" : "bg-bg"}`}
               >
                 {langs.map((lang) => (
-                  <td key={lang} className="border-r border-border px-3 py-1.5 text-foreground whitespace-nowrap font-medium" dir={isRtl(lang) ? "rtl" : undefined}>
+                  <td key={lang} className="border-r border-border px-3 py-1.5 text-fg whitespace-nowrap font-medium" dir={isRtl(lang) ? "rtl" : undefined}>
                     {row.keywords[lang] || "—"}
                   </td>
                 ))}
@@ -148,7 +148,7 @@ export default function PivotTable({
                     return (
                       <td
                         key={`${c}-${lang}`}
-                        className={`border-r border-border px-1.5 py-1.5 text-right font-mono text-[11px] tabular-nums ${volCell(v)} ${isPrimary ? "ring-inset ring-1 ring-primary/20" : ""}`}
+                        className={`border-r border-border px-1.5 py-1.5 text-right font-mono text-[11px] tabular-nums ${volCell(v)} ${isPrimary ? "ring-inset ring-1 ring-brand/20" : ""}`}
                         title={isPrimary ? `${COUNTRY_MAP[c]?.name} 主要语言` : ""}
                       >
                         {fmtVol(v)}
@@ -169,10 +169,10 @@ export default function PivotTable({
     <div className="overflow-auto rounded-xl border border-border max-h-[65vh]">
       <table className="text-xs border-collapse w-full">
         <thead className="sticky top-0 z-10">
-          <tr className="bg-muted/50 border-b border-border">
+          <tr className="bg-bg-subtle border-b border-border">
             {/* Keyword columns */}
             {langs.map((lang) => (
-              <th key={lang} className="border-r border-border px-3 py-2.5 text-left font-semibold text-muted-foreground min-w-28">
+              <th key={lang} className="border-r border-border px-3 py-2.5 text-left font-semibold text-fg-muted min-w-28">
                 <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[10px] font-bold uppercase ${getBadge(lang)}`}>
                   {lang}
                 </span>
@@ -190,10 +190,10 @@ export default function PivotTable({
               return (
                 <th
                   key={c}
-                  className="border-r border-border px-2 py-2 text-center font-medium text-muted-foreground min-w-[4.5rem]"
+                  className="border-r border-border px-2 py-2 text-center font-medium text-fg-muted min-w-[4.5rem]"
                 >
-                  <div className="text-[11px] font-semibold text-foreground leading-tight">{cfg?.name ?? c}</div>
-                  <div className="text-[10px] text-muted-foreground font-mono mb-1">{c}</div>
+                  <div className="text-[11px] font-semibold text-fg leading-tight">{cfg?.name ?? c}</div>
+                  <div className="text-[10px] text-fg-muted font-mono mb-1">{c}</div>
 
                   {/* Clickable language badge */}
                   <button
@@ -205,13 +205,13 @@ export default function PivotTable({
                       isOverridden
                         ? `${getBadge(eLang)} ring-1 ring-primary/30`
                         : isQueried
-                        ? `${getBadge(eLang)} hover:ring-1 hover:ring-primary/20`
-                        : "bg-muted border-border text-muted-foreground/50"
+                        ? `${getBadge(eLang)} hover:ring-1 hover:ring-brand/20`
+                        : "bg-bg-subtle border-border text-fg-subtle"
                     } ${onEditMapping ? "cursor-pointer hover:shadow-sm" : "cursor-default"}`}
                   >
                     {/* Override indicator dot */}
                     {isOverridden && (
-                      <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-primary border border-background" />
+                      <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-brand border border-bg" />
                     )}
 
                     {/* Lang code */}
@@ -228,10 +228,10 @@ export default function PivotTable({
 
                     {/* Not queried warning */}
                     {!isQueried && (
-                      <span title="该语言未在本次查询中" className="text-[9px] text-amber-400">⚠</span>
+                      <span title="该语言未在本次查询中" className="text-[9px] text-warning">⚠</span>
                     )}
                     {!isOverridden && !isDefaultQueried && isQueried && (
-                      <span title={`默认语言 ${defaultLang} 未查询，自动使用 ${eLang}`} className="text-[8px] text-amber-400">*</span>
+                      <span title={`默认语言 ${defaultLang} 未查询，自动使用 ${eLang}`} className="text-[8px] text-warning">*</span>
                     )}
                   </button>
                 </th>
@@ -243,10 +243,10 @@ export default function PivotTable({
           {rows.map((row, i) => (
             <tr
               key={i}
-              className={`border-b border-border/60 hover:bg-primary/5 transition-colors ${i % 2 === 1 ? "bg-muted/30" : "bg-background"}`}
+              className={`border-b border-border/60 hover:bg-brand/5 transition-colors ${i % 2 === 1 ? "bg-bg-subtle/80" : "bg-bg"}`}
             >
               {langs.map((lang) => (
-                <td key={lang} className="border-r border-border px-3 py-1.5 text-foreground whitespace-nowrap font-medium" dir={isRtl(lang) ? "rtl" : undefined}>
+                <td key={lang} className="border-r border-border px-3 py-1.5 text-fg whitespace-nowrap font-medium" dir={isRtl(lang) ? "rtl" : undefined}>
                   {row.keywords[lang] || "—"}
                 </td>
               ))}

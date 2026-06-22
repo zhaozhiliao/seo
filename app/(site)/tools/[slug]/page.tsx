@@ -22,7 +22,13 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
   if (!tool) notFound();
 
   return (
-    <ToolShell title={tool.name} nameEn={tool.nameEn} description={tool.description} icon={tool.icon}>
+    <ToolShell
+      title={tool.name}
+      nameEn={tool.nameEn}
+      description={tool.description}
+      icon={tool.icon}
+      width={tool.slug === "keywords" ? "page" : "content"}
+    >
       <ToolBody slug={tool.slug} />
     </ToolShell>
   );

@@ -8,6 +8,7 @@ import { useApiKey } from "@/components/context/ApiKeyContext";
 import { AI_PROVIDERS } from "@/lib/ai/providers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ToolPanel, ToolPanelBody, ToolPanelHeader } from "@/components/tools/tool-panel";
 
 /* A single key row — reused across all API categories. */
 function KeyRow({
@@ -38,12 +39,12 @@ function KeyRow({
   const [dirty, setDirty] = useState(false);
 
   return (
-    <div className="rounded-xl bg-muted/40 p-4">
+    <div className="rounded-xl bg-bg-subtle p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">{name}</span>
           {configured && (
-            <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+            <span className="flex items-center gap-1 rounded-full bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
               <Check size={10} /> 已配置
             </span>
           )}
@@ -53,8 +54,8 @@ function KeyRow({
               onClick={onSelect}
               className={`rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors ${
                 selected
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
+                  ? "bg-brand text-white"
+                  : "bg-bg-subtle text-fg-muted hover:text-fg"
               }`}
             >
               {selected ? "当前默认" : "设为默认"}
@@ -66,7 +67,7 @@ function KeyRow({
             href={keysUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            className="flex items-center gap-1 text-xs text-fg-muted underline-offset-4 hover:text-fg hover:underline"
           >
             获取 Key <ExternalLink size={11} />
           </a>
@@ -88,7 +89,7 @@ function KeyRow({
           <button
             type="button"
             onClick={() => setShow((v) => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg"
           >
             {show ? <Eye size={15} /> : <EyeOff size={15} />}
           </button>
@@ -107,7 +108,7 @@ function KeyRow({
           <Button
             variant="ghost"
             size="sm"
-            className="text-destructive hover:text-destructive"
+            className="text-error hover:text-error"
             onClick={() => {
               onClear();
               setDraft("");
@@ -118,13 +119,13 @@ function KeyRow({
           </Button>
         )}
       </div>
-      {hint && <p className="mt-2 text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="mt-2 text-[11px] text-fg-muted">{hint}</p>}
     </div>
   );
 }
 
 function Section({
-  icon: Icon,
+  icon,
   title,
   desc,
   children,
@@ -135,18 +136,10 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl bg-card shadow-sm">
-      <div className="flex items-center gap-3 border-b border-border/60 px-6 py-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted">
-          <Icon size={16} className="text-foreground/70" />
-        </div>
-        <div>
-          <h2 className="text-sm font-semibold leading-tight">{title}</h2>
-          <p className="text-xs text-muted-foreground">{desc}</p>
-        </div>
-      </div>
-      <div className="space-y-3 p-6">{children}</div>
-    </div>
+    <ToolPanel>
+      <ToolPanelHeader icon={icon} title={title} description={desc} />
+      <ToolPanelBody className="space-y-3">{children}</ToolPanelBody>
+    </ToolPanel>
   );
 }
 

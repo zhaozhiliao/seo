@@ -9,6 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import AiStatusHint from "@/components/tools/AiStatusHint";
+import {
+  ToolPanel,
+  ToolPanelBody,
+  ToolPanelHeader,
+  toolSegment,
+  toolSegmentActive,
+  toolSegmentInactive,
+} from "@/components/tools/tool-panel";
+import { cn } from "@/lib/utils";
 
 interface SlugSuggestion {
   slug: string;
@@ -89,25 +98,20 @@ export default function SlugGenerator() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl bg-card shadow-sm">
-        <div className="flex items-center gap-3 border-b border-border/60 px-6 py-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted">
-            <Link2 size={16} className="text-foreground/70" />
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold leading-tight">输入标题或关键词</h2>
-            <p className="text-xs text-muted-foreground">支持任意语言，自动翻译并优化为英文 Slug</p>
-          </div>
-        </div>
-
-        <div className="space-y-4 p-6">
+      <ToolPanel>
+        <ToolPanelHeader
+          icon={Link2}
+          title="输入标题或关键词"
+          description="支持任意语言，自动翻译并优化为英文 Slug"
+        />
+        <ToolPanelBody className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && generate()}
               placeholder="例如：如何在 2026 年提升网站的搜索排名"
-              className="h-10 flex-1 min-w-64"
+              className="h-10 min-w-64 flex-1"
             />
             <Button onClick={generate} disabled={loading || !title.trim() || !hasActiveKey} className="h-10 gap-2">
               {loading ? <Loader2 size={15} className="animate-spin" /> : <Wand2 size={15} />}
@@ -115,18 +119,18 @@ export default function SlugGenerator() {
             </Button>
           </div>
 
-          {/* Max words */}
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground">最多单词数</span>
-            <div className="flex rounded-lg bg-muted p-0.5">
+            <span className="text-fg-muted">最多单词数</span>
+            <div className={toolSegment}>
               {MAX_WORD_OPTIONS.map((n) => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => setMaxWords(n)}
-                  className={`rounded-md px-2.5 py-1 font-medium transition-all ${
-                    maxWords === n ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={cn(
+                    "rounded-md px-2.5 py-1 font-medium transition-all",
+                    maxWords === n ? toolSegmentActive : toolSegmentInactive
+                  )}
                 >
                   {n}
                 </button>
@@ -140,33 +144,30 @@ export default function SlugGenerator() {
               <AlertDescription className="break-all">{error}</AlertDescription>
             </Alert>
           )}
-        </div>
-      </div>
+        </ToolPanelBody>
+      </ToolPanel>
 
-      {/* Results */}
       {results.length > 0 && (
-        <div className="rounded-2xl bg-card shadow-sm">
-          <div className="border-b border-border/60 px-6 py-4">
-            <h2 className="text-sm font-semibold">生成结果</h2>
-          </div>
+        <ToolPanel>
+          <ToolPanelHeader title="生成结果" />
           <div className="divide-y divide-border/60">
             {results.map((s, i) => (
               <div key={s.slug + i} className="flex items-start gap-3 px-6 py-4">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-bg-subtle text-xs font-semibold text-fg-muted">
                   {i + 1}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <code className="block break-all font-mono text-sm font-medium text-foreground">/{s.slug}</code>
-                  {s.reason && <p className="mt-1 text-xs text-muted-foreground">{s.reason}</p>}
+                  <code className="block break-all font-mono text-sm font-medium text-fg">/{s.slug}</code>
+                  {s.reason && <p className="mt-1 text-xs text-fg-muted">{s.reason}</p>}
                 </div>
                 <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={() => copy(s.slug)}>
-                  {copied === s.slug ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
+                  {copied === s.slug ? <Check size={13} className="text-success" /> : <Copy size={13} />}
                   {copied === s.slug ? "已复制" : "复制"}
                 </Button>
               </div>
             ))}
           </div>
-        </div>
+        </ToolPanel>
       )}
     </div>
   );
