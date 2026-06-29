@@ -46,7 +46,7 @@ export function FooterLinkColumn({
   );
 }
 
-/** Shared footer shell: brand block left, link columns right. */
+/** Shared footer shell: brand block left, optional link columns right. */
 export function FooterShell({
   brand,
   copyright,
@@ -54,7 +54,7 @@ export function FooterShell({
 }: {
   brand: React.ReactNode;
   copyright: string;
-  columns: React.ReactNode;
+  columns?: React.ReactNode;
 }) {
   return (
     <footer className="bg-bg-subtle">
@@ -66,7 +66,7 @@ export function FooterShell({
           {brand}
           <p className="mt-4 text-xs text-fg-subtle">{copyright}</p>
         </div>
-        <div className="flex flex-wrap gap-10 sm:gap-12 lg:gap-16">{columns}</div>
+        {columns ? <div className="flex flex-wrap gap-10 sm:gap-12 lg:gap-16">{columns}</div> : null}
       </div>
     </footer>
   );

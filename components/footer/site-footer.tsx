@@ -1,13 +1,5 @@
 import Link from "next/link";
-import { FooterLinkColumn, FooterShell } from "@/components/footer/footer-columns";
-
-const PAGE_LINKS = [
-  { href: "/blog", label: "Blog" },
-  { href: "/docs", label: "Docs" },
-  { href: "/tools", label: "Tools" },
-  { href: "/ai-lab", label: "AI Lab" },
-  { href: "/apps", label: "Apps" },
-];
+import { FooterShell } from "@/components/footer/footer-columns";
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
@@ -23,7 +15,6 @@ export function SiteFooter() {
         </Link>
       }
       copyright={`© ${year} wikipie`}
-      columns={<FooterLinkColumn title="Pages" links={PAGE_LINKS} />}
     />
   );
 }

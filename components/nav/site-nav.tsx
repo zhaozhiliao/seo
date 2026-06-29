@@ -7,13 +7,7 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
-const LINKS = [
-  { href: "/blog", label: "Blog" },
-  { href: "/docs", label: "Docs" },
-  { href: "/tools", label: "Tools" },
-  { href: "/ai-lab", label: "AI Lab" },
-  { href: "/apps", label: "Apps" },
-];
+const LINKS = [{ href: "/tools", label: "Tools" }];
 
 export function SiteNav() {
   const pathname = usePathname();

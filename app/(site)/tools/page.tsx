@@ -18,7 +18,7 @@ export default function ToolsPage() {
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">工具</h1>
-          <p className="mt-2 text-fg-muted">关键词研究与 AI 辅助的内容/SEO 工具，{TOOLS.length} 个可用。</p>
+          <p className="mt-2 text-fg-muted">{TOOLS.length} 个 SEO 工具可用。</p>
         </div>
         <Button variant="outline" render={<Link href="/tools/settings" />} className="shrink-0 gap-2">
           <KeyRound size={16} aria-hidden="true" />
