@@ -3,38 +3,56 @@ const BASE_URL = "https://api.ahrefs.com/v3/keywords-explorer";
 export async function ahrefsRequest(
   endpoint: string,
   params: Record<string, string>,
-  apiKey?: string
+  apiKey?: string,
+  baseUrl = BASE_URL
 ): Promise<{ data: unknown; error: string | null }> {
   const key = apiKey || process.env.AHREFS_API_KEY;
   if (!key) {
     return { data: null, error: "API Key 未配置，请在页面顶部设置您的 Ahrefs API Key" };
   }
 
-  const url = new URL(`${BASE_URL}/${endpoint}`);
+  const url = new URL(`${baseUrl}/${endpoint}`);
   for (const [k, v] of Object.entries(params)) {
     url.searchParams.set(k, v);
   }
 
-  try {
-    const res = await fetch(url.toString(), {
-      headers: {
-        Authorization: `Bearer ${key}`,
-        Accept: "application/json",
-      },
-      cache: "no-store",
-      signal: AbortSignal.timeout(30_000), // 30s timeout
-    });
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const res = await fetch(url.toString(), {
+        headers: {
+          Authorization: `Bearer ${key}`,
+          Accept: "application/json",
+        },
+        cache: "no-store",
+        signal: AbortSignal.timeout(30_000),
+      });
 
-    if (!res.ok) {
-      const text = await res.text();
-      return { data: null, error: `API error ${res.status}: ${text}` };
+      if (!res.ok) {
+        const text = await res.text();
+        return { data: null, error: `API error ${res.status}: ${text}` };
+      }
+
+      const data = await res.json();
+      return { data, error: null };
+    } catch (error) {
+      if (attempt === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        continue;
+      }
+
+      const cause = error instanceof Error && error.cause && typeof error.cause === "object"
+        ? (error.cause as { code?: string }).code
+        : undefined;
+      const message = error instanceof Error ? error.message : String(error);
+      const detail = cause ? `${message} (${cause})` : message;
+      return {
+        data: null,
+        error: `无法连接 Ahrefs API，已自动重试：${detail}`,
+      };
     }
-
-    const data = await res.json();
-    return { data, error: null };
-  } catch (e) {
-    return { data: null, error: String(e) };
   }
+
+  return { data: null, error: "无法连接 Ahrefs API" };
 }
 
 export interface VolumeByCountryItem {

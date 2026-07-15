@@ -36,7 +36,27 @@ interface MatchingTermRow extends MatchingTerm {
   seedKeyword: string;
 }
 
+interface SerpPosition {
+  position: number;
+  title: string | null;
+  url: string | null;
+  type: string[];
+  page_type: string | null;
+  domain_rating: number | null;
+  url_rating: number | null;
+  traffic: number | null;
+  update_date: string | null;
+}
+
+interface SourceSerpRow extends SerpPosition {
+  sourceKeyword: string;
+}
+
 type QueryMode = "single" | "batch";
+
+const MAX_BATCH_KEYWORDS = 5_000;
+const REQUEST_INTERVAL_MS = 2_100;
+const RESULT_UPDATE_INTERVAL = 25;
 
 const INTENT_LABELS: Record<keyof IntentMap, string> = {
   informational: "信息",
@@ -70,6 +90,26 @@ function downloadBlob(content: BlobPart, type: string, filename: string) {
   URL.revokeObjectURL(url);
 }
 
+function downloadBatchCsvTemplate() {
+  downloadBlob(
+    "\uFEFFkeyword\r\ntoyota\r\nhonda\r\nused cars",
+    "text/csv;charset=utf-8",
+    "matching-terms-template.csv"
+  );
+}
+
+async function downloadBatchExcelTemplate() {
+  const XLSX = await import("xlsx");
+  const sheet = XLSX.utils.json_to_sheet([
+    { keyword: "toyota" },
+    { keyword: "honda" },
+    { keyword: "used cars" },
+  ]);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, sheet, "Keywords");
+  XLSX.writeFile(workbook, "matching-terms-template.xlsx");
+}
+
 export default function MatchingTerms() {
   const { apiKey, hasKey } = useApiKey();
   const [keyword, setKeyword] = useState("");
@@ -85,6 +125,7 @@ export default function MatchingTerms() {
   const [error, setError] = useState<string | null>(null);
   const [queried, setQueried] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
+  const [serpRows, setSerpRows] = useState<SourceSerpRow[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -99,7 +140,9 @@ export default function MatchingTerms() {
       const keywordKey = keys.find((key) => ["keyword", "keywords", "关键词"].includes(key.trim().toLowerCase())) ?? keys[0];
       const imported = Array.from(new Set(records.map((row) => String(row[keywordKey] ?? "").trim()).filter(Boolean)));
       if (imported.length === 0) throw new Error("文件中没有可用的关键词");
-      if (imported.length > 100) throw new Error("单次最多导入 100 个关键词");
+      if (imported.length > MAX_BATCH_KEYWORDS) {
+        throw new Error(`单次最多导入 ${MAX_BATCH_KEYWORDS.toLocaleString()} 个关键词`);
+      }
       setBatchKeywords(imported);
       setBatchFilename(file.name);
       setRows([]);
@@ -117,6 +160,7 @@ export default function MatchingTerms() {
     setBatchKeywords([]);
     setBatchFilename("");
     setRows([]);
+    setSerpRows([]);
     setQueried(false);
   }
 
@@ -132,24 +176,37 @@ export default function MatchingTerms() {
     setError(null);
     setQueried(false);
     setRows([]);
+    setSerpRows([]);
     setProgress({ done: 0, total: seeds.length });
     const controller = new AbortController();
     abortRef.current = controller;
     try {
       const collected: MatchingTermRow[] = [];
+      const collectedSerp: SourceSerpRow[] = [];
       for (let index = 0; index < seeds.length; index += 1) {
         const seedKeyword = seeds[index];
         const params = new URLSearchParams({ keyword: seedKeyword, country, limit: String(limit), match_mode: matchMode, terms: termType });
-        const response = await fetch(`/api/matching-terms?${params}`, {
-          headers: { "x-ahrefs-key": apiKey },
-          signal: controller.signal,
-        });
-        const payload = (await response.json()) as { keywords?: MatchingTerm[]; error?: string };
+        const serpParams = new URLSearchParams({ keyword: seedKeyword, country, top_positions: "20" });
+        const [response, serpResponse] = await Promise.all([
+          fetch(`/api/matching-terms?${params}`, { headers: { "x-ahrefs-key": apiKey }, signal: controller.signal }),
+          fetch(`/api/serp-overview?${serpParams}`, { headers: { "x-ahrefs-key": apiKey }, signal: controller.signal }),
+        ]);
+        const [payload, serpPayload] = await Promise.all([
+          response.json() as Promise<{ keywords?: MatchingTerm[]; error?: string }>,
+          serpResponse.json() as Promise<{ positions?: SerpPosition[]; error?: string }>,
+        ]);
         if (!response.ok) throw new Error(`${seedKeyword}：${payload.error || "查询失败"}`);
+        if (!serpResponse.ok) throw new Error(`${seedKeyword} SERP：${serpPayload.error || "查询失败"}`);
         collected.push(...(payload.keywords ?? []).map((row) => ({ ...row, seedKeyword })));
-        setRows([...collected]);
+        collectedSerp.push(...(serpPayload.positions ?? []).map((row) => ({ ...row, sourceKeyword: seedKeyword })));
+        if ((index + 1) % RESULT_UPDATE_INTERVAL === 0 || index === seeds.length - 1) {
+          setRows([...collected]);
+          setSerpRows([...collectedSerp]);
+        }
         setProgress({ done: index + 1, total: seeds.length });
-        if (index < seeds.length - 1) await new Promise((resolve) => setTimeout(resolve, 300));
+        if (index < seeds.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, REQUEST_INTERVAL_MS));
+        }
       }
       setQueried(true);
     } catch (queryError) {
@@ -163,11 +220,11 @@ export default function MatchingTerms() {
   }
 
   function exportCsv() {
-    const headers = ["来源关键词", "匹配关键词", "国家", "搜索量", "全球搜索量", "KD", "CPC(美分)", "流量潜力", "搜索意图", "父主题"];
-    const values = rows.map((row) => [
-      row.seedKeyword, row.keyword, country, row.volume ?? "", row.global_volume ?? "", row.difficulty ?? "",
-      row.cpc ?? "", row.traffic_potential ?? "", intentText(row.intents), row.parent_topic ?? "",
-    ]);
+    const headers = ["来源关键词", "数据类型", "关键词/标题", "SERP URL", "SERP排名", "国家", "搜索意图/结果类型", "搜索量", "全球搜索量", "KD", "CPC(美分)", "流量潜力", "父主题", "页面类型", "DR", "UR", "SERP流量", "更新时间"];
+    const values = [
+      ...rows.map((row) => [row.seedKeyword, "匹配关键词", row.keyword, "", "", country, intentText(row.intents), row.volume ?? "", row.global_volume ?? "", row.difficulty ?? "", row.cpc ?? "", row.traffic_potential ?? "", row.parent_topic ?? "", "", "", "", "", ""]),
+      ...serpRows.map((row) => [row.sourceKeyword, "SERP", row.title ?? "", row.url ?? "", row.position, country, row.type.join("、"), "", "", "", "", "", "", row.page_type ?? "", row.domain_rating ?? "", row.url_rating ?? "", row.traffic ?? "", row.update_date ?? ""]),
+    ];
     const csv = [headers, ...values]
       .map((line) => line.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","))
       .join("\r\n");
@@ -176,21 +233,19 @@ export default function MatchingTerms() {
 
   async function exportExcel() {
     const XLSX = await import("xlsx");
-    const data = rows.map((row) => ({
-      来源关键词: row.seedKeyword,
-      匹配关键词: row.keyword,
-      国家: `${COUNTRY_MAP[country]?.name ?? country} (${country})`,
-      搜索量: row.volume,
-      全球搜索量: row.global_volume,
-      KD: row.difficulty,
-      "CPC(美分)": row.cpc,
-      流量潜力: row.traffic_potential,
-      搜索意图: intentText(row.intents),
-      父主题: row.parent_topic,
-    }));
-    const sheet = XLSX.utils.json_to_sheet(data);
+    const countryLabel = `${COUNTRY_MAP[country]?.name ?? country} (${country})`;
+    const matchingData = rows.map((row) => ({ 来源关键词: row.seedKeyword, 匹配关键词: row.keyword, 国家: countryLabel, 搜索意图: intentText(row.intents), 搜索量: row.volume, 全球搜索量: row.global_volume, KD: row.difficulty, "CPC(美分)": row.cpc, 流量潜力: row.traffic_potential, 父主题: row.parent_topic }));
+    const serpData = serpRows.map((row) => ({ 来源关键词: row.sourceKeyword, 国家: countryLabel, 排名: row.position, 标题: row.title, "SERP URL": row.url, 结果类型: row.type.join("、"), 页面类型: row.page_type, DR: row.domain_rating, UR: row.url_rating, 流量: row.traffic, 更新时间: row.update_date }));
+    const matchingSheet = XLSX.utils.json_to_sheet(matchingData);
+    const serpSheet = XLSX.utils.json_to_sheet(serpData);
+    serpData.forEach((row, index) => {
+      if (!row["SERP URL"]) return;
+      const cell = serpSheet[XLSX.utils.encode_cell({ r: index + 1, c: 4 })];
+      if (cell) cell.l = { Target: String(row["SERP URL"]), Tooltip: String(row.标题 ?? row["SERP URL"]) };
+    });
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, sheet, "Matching Terms");
+    XLSX.utils.book_append_sheet(workbook, matchingSheet, "匹配关键词");
+    XLSX.utils.book_append_sheet(workbook, serpSheet, "来源词 SERP");
     XLSX.writeFile(workbook, `matching-terms-${queryMode === "batch" ? "batch" : keyword}-${country}.xlsx`);
   }
 
@@ -203,10 +258,10 @@ export default function MatchingTerms() {
         actions={rows.length > 0 ? (
           <div className="flex gap-2">
             <Button type="button" variant="outline" size="sm" onClick={exportCsv}>
-              <Download aria-hidden="true" />CSV
+              <Download aria-hidden="true" />导出 CSV
             </Button>
             <Button type="button" variant="outline" size="sm" onClick={exportExcel}>
-              <FileSpreadsheet aria-hidden="true" />Excel
+              <FileSpreadsheet aria-hidden="true" />导出 Excel
             </Button>
           </div>
         ) : undefined}
@@ -233,17 +288,23 @@ export default function MatchingTerms() {
             </div>
           ) : (
             <div className="space-y-1.5">
-              <Label htmlFor="matching-file">关键词文件</Label>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label htmlFor="matching-file">关键词文件</Label>
+                <div className="flex gap-2">
+                  <Button type="button" variant="ghost" size="sm" onClick={downloadBatchCsvTemplate}><Download aria-hidden="true" />下载 CSV 模板</Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={downloadBatchExcelTemplate}><FileSpreadsheet aria-hidden="true" />下载 Excel 模板</Button>
+                </div>
+              </div>
               <input ref={fileRef} id="matching-file" type="file" accept=".csv,.xlsx,.xls" className="sr-only" onChange={(event) => { const file = event.target.files?.[0]; if (file) void importKeywords(file); }} />
               {batchKeywords.length === 0 ? (
                 <button type="button" onClick={() => fileRef.current?.click()} className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border-strong bg-bg-inset px-4 py-8 text-sm text-fg-muted transition-colors hover:border-brand hover:text-brand">
                   <Upload aria-hidden="true" className="size-4" />导入 CSV 或 Excel
-                  <span className="text-xs text-fg-subtle">支持 keyword、keywords、关键词列；最多 100 个</span>
+                  <span className="text-xs text-fg-subtle">支持 keyword、keywords、关键词列；最多 5,000 个</span>
                 </button>
               ) : (
                 <div className="flex items-center gap-3 rounded-xl bg-bg-inset px-4 py-3 text-sm">
                   <FileSpreadsheet className="size-4 text-brand" aria-hidden="true" />
-                  <div className="min-w-0 flex-1"><p className="truncate font-medium text-fg">{batchFilename}</p><p className="text-xs text-fg-muted">已导入 {batchKeywords.length} 个关键词</p></div>
+                  <div className="min-w-0 flex-1"><p className="truncate font-medium text-fg">{batchFilename}</p><p className="text-xs text-fg-muted">已导入 {batchKeywords.length.toLocaleString()} 个关键词；预计至少 {Math.max(1, Math.ceil(batchKeywords.length * REQUEST_INTERVAL_MS / 60_000))} 分钟</p></div>
                   <Button type="button" variant="ghost" size="icon-sm" onClick={clearBatch} aria-label="移除导入文件"><X aria-hidden="true" /></Button>
                 </div>
               )}
@@ -297,7 +358,7 @@ export default function MatchingTerms() {
         {rows.length > 0 ? (
           <div className="overflow-hidden rounded-xl border border-border">
             <div className="flex items-center justify-between border-b border-border bg-bg-inset px-4 py-2.5 text-xs text-fg-muted">
-              <span>共返回 <strong className="text-fg">{rows.length.toLocaleString()}</strong> 条</span>
+              <span>匹配词 <strong className="text-fg">{rows.length.toLocaleString()}</strong> 条 · 来源词 SERP <strong className="text-fg">{serpRows.length.toLocaleString()}</strong> 条</span>
               <span>{COUNTRY_MAP[country]?.name} · {queryMode === "batch" ? `${progress.total} 个来源词` : keyword}</span>
             </div>
             <div className="max-h-[640px] overflow-auto">
