@@ -5,6 +5,7 @@ import EeatEvaluator from "@/components/tools/EeatEvaluator";
 import SlugGenerator from "@/components/tools/SlugGenerator";
 import SchemaBuilder from "@/components/tools/SchemaBuilder";
 import UiTranslator from "@/components/tools/UiTranslator";
+import MatchingTerms from "@/components/tools/MatchingTerms";
 
 const skeleton = <div className="h-48 animate-pulse rounded-xl bg-bg-subtle" />;
 
@@ -22,6 +23,8 @@ export function ToolBody({ slug }: { slug: string }) {
           </Suspense>
         </div>
       );
+    case "matching-terms":
+      return <MatchingTerms />;
     case "eeat":
       return <EeatEvaluator />;
     case "slug":

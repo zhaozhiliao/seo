@@ -1,4 +1,4 @@
-import { Search, BadgeCheck, Link2, Code2, Languages } from "lucide-react";
+import { Search, BadgeCheck, Link2, Code2, Languages, ListFilter } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 /** Tool registry — single source of truth for the hub, the dynamic
@@ -22,6 +22,15 @@ export const TOOLS: ToolMeta[] = [
     description:
       "查询全球各国搜索量、CPC 及竞争难度，支持单个关键词深度分析与批量导入多语言对比。",
     tags: ["Ahrefs", "批量查询", "多语言"],
+  },
+  {
+    slug: "matching-terms",
+    icon: ListFilter,
+    name: "匹配关键词",
+    nameEn: "Matching Terms",
+    description:
+      "按一个种子关键词和国家获取 Ahrefs 匹配词，控制返回数量并导出 CSV 或 Excel。",
+    tags: ["Ahrefs", "关键词建议", "数据导出"],
   },
   {
     slug: "eeat",

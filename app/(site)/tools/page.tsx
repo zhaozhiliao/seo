@@ -8,7 +8,7 @@ import { buildMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
   title: "工具",
-  description: "几个顺手的 SEO 工具：关键词探索、E-E-A-T 评估、Slug、Schema、UI 文案翻译。",
+  description: "几个顺手的 SEO 工具：关键词探索、匹配关键词、E-E-A-T 评估、Slug、Schema、UI 文案翻译。",
   path: "/tools",
 });
 
